@@ -48,6 +48,7 @@ export default function Admin(props: { disableCustomTheme?: boolean }) {
             spacing={2}
             sx={{
               alignItems: 'center',
+              height: '100%',
               mx: 3,
               pb: 5,
               mt: { xs: 8, md: 0 },

@@ -14,13 +14,13 @@ import {
 
 interface ButtonFieldProps
   extends UseDateFieldProps<Dayjs, false>,
-    BaseSingleInputFieldProps<
-      Dayjs | null,
-      Dayjs,
-      FieldSection,
-      false,
-      DateValidationError
-    > {
+  BaseSingleInputFieldProps<
+    Dayjs | null,
+    Dayjs,
+    FieldSection,
+    false,
+    DateValidationError
+  > {
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -52,7 +52,7 @@ function ButtonField(props: ButtonFieldProps) {
 }
 
 export default function CustomDatePicker() {
-  const [value, setValue] = React.useState<Dayjs | null>(dayjs('2023-04-17'));
+  const [value, setValue] = React.useState<Dayjs | null>(dayjs()); // Set initial value to today's date
   const [open, setOpen] = React.useState(false);
 
   return (

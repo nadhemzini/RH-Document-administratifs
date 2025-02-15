@@ -61,6 +61,7 @@ export default function UserModal({ open, handleClose, formData, handleSubmit }:
                         value={form.name}
                         onChange={handleInputChange}
                         required
+                        style={{ marginBottom: 20 }}
                     />
                     <TextField
                         margin="dense"
@@ -71,17 +72,9 @@ export default function UserModal({ open, handleClose, formData, handleSubmit }:
                         value={form.email}
                         onChange={handleInputChange}
                         required
+                        style={{ marginBottom: 20 }}
                     />
-                    <TextField
-                        margin="dense"
-                        name="password"
-                        label="Password"
-                        type="password"
-                        fullWidth
-                        value={form.password}
-                        onChange={handleInputChange}
-                        required={!form.id}
-                    />
+
                     <Select
                         margin="dense"
                         name="role"

@@ -10,12 +10,16 @@ import ListItemIcon, { listItemIconClasses } from '@mui/material/ListItemIcon';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import MenuButton from './MenuButton';
-
+import { useNavigate } from 'react-router-dom';
 const MenuItem = styled(MuiMenuItem)({
   margin: '2px 0',
 });
 
 export default function OptionsMenu() {
+  const navigate = useNavigate();
+  const logout = () => {
+    navigate('/');
+  };
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -54,9 +58,9 @@ export default function OptionsMenu() {
         }}
       >
         <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
+        {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
         <Divider />
-        <MenuItem onClick={handleClose}>Add another account</MenuItem>
+        {/* <MenuItem onClick={handleClose}>Add another account</MenuItem> */}
         <MenuItem onClick={handleClose}>Settings</MenuItem>
         <Divider />
         <MenuItem
@@ -68,7 +72,7 @@ export default function OptionsMenu() {
             },
           }}
         >
-          <ListItemText>Logout</ListItemText>
+          <ListItemText onClick={logout}>Logout</ListItemText>
           <ListItemIcon>
             <LogoutRoundedIcon fontSize="small" />
           </ListItemIcon>

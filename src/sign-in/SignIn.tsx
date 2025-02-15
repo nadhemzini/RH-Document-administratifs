@@ -129,7 +129,8 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             variant="h4"
             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
           >
-            Sign in
+            <img src="/src/assets/ISIM_LOGO_ar-removebg-preview.png" alt="ISIMM" style={{ height: '6.5em', marginRight: '0.5em', borderRadius: 50 }} />
+            Welcome to the ISIMM
           </Typography>
           <Box
             component="form"

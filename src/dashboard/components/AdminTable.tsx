@@ -79,13 +79,15 @@ export default function AdminTable() {
     ];
 
     return (
-        <div style={{ height: 400, width: '100%' }}>
+        <>
             <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
 
                 <Button style={{ border: '2px solid', width: '20%' }} onClick={() => handleOpen()}>Add User</Button>
             </div>
-            <DataGrid rows={data} columns={columns} slots={{ toolbar: GridToolbar }} pageSize={5} rowsPerPageOptions={[5]} />
-            <UserModal open={open} handleClose={handleClose} formData={formData} handleSubmit={handleSubmit} />
-        </div>
+            <div style={{ height: 400, width: '100%' }}>
+                <DataGrid rows={data} columns={columns} slots={{ toolbar: GridToolbar }} pageSize={5} rowsPerPageOptions={[5]} />
+                <UserModal open={open} handleClose={handleClose} formData={formData} handleSubmit={handleSubmit} />
+            </div>
+        </>
     );
 }

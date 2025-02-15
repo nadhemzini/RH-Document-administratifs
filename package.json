@@ -21,6 +21,7 @@
     "@mui/x-data-grid-pro": "^7.25.0",
     "@mui/x-date-pickers": "^7.25.0",
     "@mui/x-tree-view": "^7.25.0",
+    "axios": "^1.7.9",
     "date-fns": "^2.29.3",
     "dayjs": "^1.11.13",
     "react": "^18.3.1",

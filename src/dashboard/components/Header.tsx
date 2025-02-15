@@ -16,10 +16,12 @@ export default function Header({ pageTitle }: { pageTitle: string }) {
       direction="row"
       sx={{
         display: { xs: 'none', md: 'flex' },
-        width: '100%',
+        width: '50%',
         alignItems: { xs: 'flex-start', md: 'center' },
         justifyContent: 'space-between',
         maxWidth: { sm: '100%', md: '1700px' },
+        position: 'absolute',
+        top: 0,
         pt: 1.5,
       }}
       spacing={2}

@@ -10,6 +10,7 @@ import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
 import MenuButton from './MenuButton';
 import MenuContent from './MenuContent';
 import CardAlert from './CardAlert';
+import { useNavigate } from 'react-router-dom';
 
 interface SideMenuMobileProps {
   open: boolean | undefined;
@@ -17,6 +18,10 @@ interface SideMenuMobileProps {
 }
 
 export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobileProps) {
+  const navigate = useNavigate();
+  const logout = () => {
+    navigate('/');
+  };
   return (
     <Drawer
       anchor="right"
@@ -41,14 +46,14 @@ export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobilePro
             direction="row"
             sx={{ gap: 1, alignItems: 'center', flexGrow: 1, p: 1 }}
           >
-            <Avatar
+            {/* <Avatar
               sizes="small"
               alt="zininadhem"
               src="/static/images/avatar/7.jpg"
               sx={{ width: 24, height: 24 }}
-            />
+            /> */}
             <Typography component="p" variant="h6">
-              zininadhem
+              zini nadhem
             </Typography>
           </Stack>
           {/*<MenuButton showBadge>
@@ -63,7 +68,7 @@ export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobilePro
         </Stack>
         {/*<CardAlert />*/}
         <Stack sx={{ p: 2 }}>
-          <Button variant="outlined" fullWidth startIcon={<LogoutRoundedIcon />}>
+          <Button variant="outlined" onClick={logout} fullWidth startIcon={<LogoutRoundedIcon />}>
             Logout
           </Button>
         </Stack>

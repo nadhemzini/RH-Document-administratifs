@@ -213,7 +213,7 @@ const Formconge = () => {
                                     onChange={handleInputChange}
                                     error={!!errors.reason}
                                     helperText={errors.reason}
-                                    multiline
+
                                     rows={4}
                                 />
                             </Grid>
