@@ -6,9 +6,9 @@ import Dashboard from './dashboard/Dashboard.tsx'
 import TrackingConge from './dashboard/TrackingConge.tsx'
 import SignIn from './sign-in/SignIn.tsx'
 import SignUp from './sign-up/SignUp.tsx'
-import Checkout from './checkout/Checkout.tsx'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Profile from './dashboard/Profile.tsx'
+import Certificate from './dashboard/Certificate.tsx'
 function App() {
 
   return (
@@ -22,6 +22,7 @@ function App() {
         <Route path="/conge" Component={Conge} />
         <Route path="/tracking" Component={TrackingConge} />
         <Route path="/profile" Component={Profile} />
+        <Route path="/certificate" Component={Certificate} />
 
       </Routes>
     </Router>

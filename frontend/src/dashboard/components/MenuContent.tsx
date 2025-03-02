@@ -16,6 +16,7 @@ import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 import PersonIcon from '@mui/icons-material/Person';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ScreenSearchDesktopIcon from '@mui/icons-material/ScreenSearchDesktop';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 
 const mainListItems = [
   { text: 'Home', icon: <HomeRoundedIcon />, path: '/dashboard' },
@@ -23,6 +24,7 @@ const mainListItems = [
   { text: 'leave', icon: <ExitToAppIcon />, path: '/conge' },
   { text: 'Tracking my leave', icon: <ScreenSearchDesktopIcon />, path: '/tracking' },
   { text: 'Tasks', icon: <AssignmentRoundedIcon />, path: '/tasks' },
+  { text: 'certificate', icon: <CardGiftcardIcon />, path: '/certificate' },
 ];
 
 const secondaryListItems = [
