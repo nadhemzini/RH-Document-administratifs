@@ -23,14 +23,13 @@ const mainListItems = [
   { text: 'User', icon: <PersonIcon />, path: '/user' },
   { text: 'leave', icon: <ExitToAppIcon />, path: '/conge' },
   { text: 'Tracking my leave', icon: <ScreenSearchDesktopIcon />, path: '/tracking' },
-  { text: 'Tasks', icon: <AssignmentRoundedIcon />, path: '/tasks' },
+  { text: 'Task', icon: <AssignmentRoundedIcon />, path: '/task' },
   { text: 'certificate', icon: <CardGiftcardIcon />, path: '/certificate' },
 ];
 
 const secondaryListItems = [
   { text: 'Settings', icon: <SettingsRoundedIcon />, path: '/settings' },
   { text: 'About', icon: <InfoRoundedIcon />, path: '/about' },
-  { text: 'Feedback', icon: <HelpRoundedIcon />, path: '/feedback' },
 ];
 
 export default function MenuContent() {

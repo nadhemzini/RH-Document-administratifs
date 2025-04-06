@@ -23,7 +23,7 @@ function CertificateForm() {
     const [reason, setReason] = useState('');
     const [selectedCertificateType, setSelectedCertificateType] = useState('');
 
-    const certificateTypes = ['Certificate', 'Attestassion'];
+    const certificateTypes = ['Certificate', 'attestation'];
 
     // useEffect(() => {
     //     // Fetch names from the backend
@@ -137,8 +137,8 @@ function CertificateForm() {
                         <img src={Page} style={{ width: '100%', borderRadius: 10 }} alt="CertificateTemplate" />
                         <div style={{ position: 'absolute', top: 80, left: 0, height: '50%', width: '100%', boxSizing: 'border-box' }} >
                             <Typography variant="h1" color='textSecondary' sx={{ mb: 10 }}>{selectedCertificateType}</Typography>
-                            <Typography variant="h2" style={{ padding: '20px' }} color='info' sx={{ mb: 5 }}>Nadhem Zini{selectedName}</Typography>
-                            <Typography variant="h6" color='textPrimary' sx={{ mb: -20 }}>Walahi 7ab ya5o certificate 5atro insan m3alm {reason}</Typography>
+                            <Typography variant="h2" style={{ padding: '20px' }} color='info' sx={{ mb: 5 }}>{selectedName}</Typography>
+                            <Typography variant="h6" color='textPrimary' sx={{ mb: -20 }}> {reason}</Typography>
                         </div>
                     </Container>
                 </Grid>
