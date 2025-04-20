@@ -6,17 +6,8 @@ import { Calendar } from "primereact/calendar";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-
-interface Leave {
-    name: string;
-    email: string;
-    dateStart: Date | null;
-    dateEnd: Date | null;
-    reason: string;
-    type?: string;
-    status?: 'PENDING' | 'APPROVED' | 'REJECTED';
-    solde?: number;
-}
+import { Dropdown } from 'primereact/dropdown';
+import { Leave } from '@/types/Leave'; // Adjust this path if needed
 
 const Leaves = () => {
     const [leave, setLeave] = useState<Leave>({
@@ -25,27 +16,33 @@ const Leaves = () => {
         dateStart: null,
         dateEnd: null,
         reason: '',
+        type: '',
     });
 
     const toast = useRef<Toast>(null);
+
+    const leaveTypeOptions = [
+        { label: 'Annual Leave', value: 'ANNUAL' },
+        { label: 'Sick Leave', value: 'SICK' },
+        { label: 'Maternity Leave', value: 'MATERNITY' },
+        { label: 'Unpaid Leave', value: 'UNPAID' },
+    ];
 
     const handleChange = (field: keyof Leave, value: string | Date | null) => {
         setLeave({ ...leave, [field]: value });
     };
 
     const handleSubmit = async () => {
-        // Check if all fields are filled
-        if (!leave.name || !leave.email || !leave.dateStart || !leave.dateEnd || !leave.reason) {
+        if (!leave.name || !leave.email || !leave.dateStart || !leave.dateEnd || !leave.reason || !leave.type) {
             toast.current?.show({
                 severity: 'warn',
                 summary: 'Validation Failed',
-                detail: 'Please fill all fields.',
+                detail: 'Please fill all fields including leave type.',
                 life: 3000,
             });
             return;
         }
 
-        // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(leave.email)) {
             toast.current?.show({
@@ -57,7 +54,6 @@ const Leaves = () => {
             return;
         }
 
-        // Check if Date End is before Date Start
         if (leave.dateEnd < leave.dateStart) {
             toast.current?.show({
                 severity: 'warn',
@@ -71,9 +67,7 @@ const Leaves = () => {
         try {
             const response = await fetch('http://localhost:3001/api/leaves', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...leave,
                     dateStart: leave.dateStart.toISOString(),
@@ -88,7 +82,7 @@ const Leaves = () => {
                     detail: 'Leave submitted successfully!',
                     life: 3000,
                 });
-                setLeave({ name: '', email: '', dateStart: null, dateEnd: null, reason: '' });
+                setLeave({ name: '', email: '', dateStart: null, dateEnd: null, reason: '', type: '' });
             } else {
                 const data = await response.json();
                 toast.current?.show({
@@ -124,6 +118,16 @@ const Leaves = () => {
                             <label htmlFor="email">Email</label>
                             <InputText id="email" value={leave.email} onChange={(e) => handleChange('email', e.target.value)} />
                         </div>
+                        <div className="field col">
+                            <label htmlFor="type">Type of Leave</label>
+                            <Dropdown
+                                id="type"
+                                value={leave.type}
+                                options={leaveTypeOptions}
+                                onChange={(e) => handleChange('type', e.value)}
+                                placeholder="Select Leave Type"
+                            />
+                        </div>
                     </div>
                     <div className="formgrid grid">
                         <div className="field col">
@@ -145,7 +149,7 @@ const Leaves = () => {
                             />
                         </div>
                     </div>
-                    <h5>Reasons</h5>
+                    <h5>Reason</h5>
                     <InputTextarea
                         placeholder="Your Message"
                         rows={5}

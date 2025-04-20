@@ -24,6 +24,7 @@ const AppMenu = () => {
                 { label: 'Leaves', icon: 'pi pi-calendar-minus', to: '/leaves' },
                 { label: 'Consult Leaves', icon: 'pi pi-search', to: '/ViewLeaves' },
                 { label: 'fix cote ', icon: 'pi pi-wrench', to: '/config' },
+                { label: 'approve leave ', icon: 'pi pi-wrench', to: '/approve' },
             ]
         },
         {

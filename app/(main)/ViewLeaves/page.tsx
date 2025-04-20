@@ -4,26 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
-
-interface Leave {
-    name: string;
-    email: string;
-    dateStart: Date | null;
-    dateEnd: Date | null;
-    reason: string;
-    type: string;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED';
-}
+import { Leave } from '@/types/Leave'; // ✅ Import the shared interface
 
 const LeaveTracker = () => {
     const [dataViewValue, setDataViewValue] = useState<Leave[]>([]);
     const [filteredValue, setFilteredValue] = useState<Leave[] | null>(null);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
-    const [layout, setLayout] = useState<'grid' | 'list'>('grid'); // Default to grid layout
+    const [layout, setLayout] = useState<'grid' | 'list'>('grid');
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortOrder, setSortOrder] = useState<1 | -1 | null>(null);
     const [sortField, setSortField] = useState<string>('');
-    const [solde, setSolde] = useState<number | null>(null); // State for solde
+    const [solde, setSolde] = useState<number | null>(null);
 
     const sortOptions = [
         { label: 'Date Start: Newest First', value: '!dateStart' },
@@ -31,11 +22,10 @@ const LeaveTracker = () => {
     ];
 
     useEffect(() => {
-        // Mock data for testing
         const mockData: Leave[] = [
             {
-                name: 'nadhme zini',
-                email: 'nadhem zini@gmail.coù',
+                name: 'Nadhem Zini',
+                email: 'nadhem.zini@gmail.com',
                 dateStart: new Date('2023-04-01'),
                 dateEnd: new Date('2023-04-05'),
                 reason: 'Vacation',
@@ -43,7 +33,16 @@ const LeaveTracker = () => {
                 status: 'APPROVED',
             },
             {
-                name: 'nader zini',
+                name: 'Nadhem Zini',
+                email: 'nadhem.zini@gmail.com',
+                dateStart: new Date('2023-04-01'),
+                dateEnd: new Date('2023-04-05'),
+                reason: 'Vacation',
+                type: 'Paid Leave',
+                status: 'APPROVED',
+            },
+            {
+                name: 'Nader Zini',
                 email: 'naderzini@gmail.com',
                 dateStart: new Date('2023-04-10'),
                 dateEnd: new Date('2023-04-15'),
@@ -52,7 +51,7 @@ const LeaveTracker = () => {
                 status: 'PENDING',
             },
             {
-                name: 'lamine zini',
+                name: 'Lamine Zini',
                 email: 'laminezini@gmail.com',
                 dateStart: new Date('2023-03-20'),
                 dateEnd: new Date('2023-03-25'),
@@ -63,13 +62,11 @@ const LeaveTracker = () => {
         ];
         setDataViewValue(mockData);
 
-        // Fetch solde from backend (mocked here)
         const fetchSolde = async () => {
             try {
-                // Replace with your backend API endpoint
                 const response = await fetch('http://localhost:3001/api/solde');
                 const data = await response.json();
-                setSolde(data.solde); // Assuming the backend returns { solde: number }
+                setSolde(data.solde);
             } catch (error) {
                 console.error('Error fetching solde:', error);
             }
@@ -129,8 +126,7 @@ const LeaveTracker = () => {
                     <div className="mb-1"><strong>Type:</strong> {leave.type}</div>
                     <div className="mb-1"><strong>Reason:</strong> {leave.reason}</div>
                     <div className="mb-1 text-sm">
-                        From: {leave.dateStart ? new Date(leave.dateStart).toLocaleDateString() : 'N/A'} →
-                        To: {leave.dateEnd ? new Date(leave.dateEnd).toLocaleDateString() : 'N/A'}
+                        From: {leave.dateStart ? new Date(leave.dateStart).toLocaleDateString() : 'N/A'} → To: {leave.dateEnd ? new Date(leave.dateEnd).toLocaleDateString() : 'N/A'}
                     </div>
                     <span className={`p-tag p-tag-${leave.status === 'APPROVED' ? 'success' : leave.status === 'REJECTED' ? 'danger' : 'warning'}`}>
                         {leave.status}
@@ -141,7 +137,7 @@ const LeaveTracker = () => {
     );
 
     const dataviewGridItem = (leave: Leave) => (
-        <div className="col-12 md:col-4 lg:col-3"> {/* Adjust column size for responsiveness */}
+        <div className="col-12 md:col-4 lg:col-3">
             <div className="card m-3 border-1 surface-border">
                 <div className="flex flex-column align-items-center text-center mb-3">
                     <div className="text-xl font-bold">{leave.name}</div>
@@ -149,8 +145,7 @@ const LeaveTracker = () => {
                     <div className="mb-1"><strong>Type:</strong> {leave.type}</div>
                     <div className="mb-2"><strong>Reason:</strong> {leave.reason}</div>
                     <div className="text-sm mb-2">
-                        {leave.dateStart ? new Date(leave.dateStart).toLocaleDateString() : 'N/A'} →
-                        {leave.dateEnd ? new Date(leave.dateEnd).toLocaleDateString() : 'N/A'}
+                        {leave.dateStart ? new Date(leave.dateStart).toLocaleDateString() : 'N/A'} → {leave.dateEnd ? new Date(leave.dateEnd).toLocaleDateString() : 'N/A'}
                     </div>
                     <span className={`p-tag p-tag-${leave.status === 'APPROVED' ? 'success' : leave.status === 'REJECTED' ? 'danger' : 'warning'}`}>
                         {leave.status}
@@ -161,7 +156,7 @@ const LeaveTracker = () => {
     );
 
     const itemTemplate = (leave: Leave, layout: 'grid' | 'list') => {
-        if (!leave) return;
+        if (!leave) return null;
         return layout === 'list' ? dataviewListItem(leave) : dataviewGridItem(leave);
     };
 
@@ -170,7 +165,7 @@ const LeaveTracker = () => {
             <div className="col-12">
                 <div className="card">
                     <h5>Leave Tracker</h5>
-                    <p className="">This is your solde: <strong>{solde !== null ? `${solde} days` : 'Loading...'}</strong></p>
+                    <p>This is your solde: <strong>{solde !== null ? `${solde} days` : 'Loading...'}</strong></p>
                     <DataView
                         value={filteredValue || dataViewValue}
                         layout={layout}
