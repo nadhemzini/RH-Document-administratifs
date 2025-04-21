@@ -6,8 +6,8 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
-import { Task } from '../../../types/Task'; // if you're using a shared type file
-import axios from 'axios';
+import { Task } from '../../../types/Task';
+// import axios from 'axios'; // Uncomment when using API
 
 // Simulate logged-in employee
 const userName = 'Alice';
@@ -18,7 +18,25 @@ const statusOptions = [
 ];
 
 const EmployeeTaskManager = () => {
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([
+        {
+            id: 1,
+            title: 'Update Resume',
+            description: 'Add latest projects and experiences.',
+            assignedTo: 'Alice',
+            status: 'IN_PROGRESS',
+            deadline: new Date('2025-04-25'),
+        },
+        {
+            id: 2,
+            title: 'Client Meeting',
+            description: 'Present quarterly performance report.',
+            assignedTo: 'Alice',
+            status: 'COMPLETED',
+            deadline: new Date('2025-04-10'),
+        }
+    ]);
+
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [dialogVisible, setDialogVisible] = useState(false);
     const [filterStatus, setFilterStatus] = useState<string | null>(null);
@@ -34,8 +52,13 @@ const EmployeeTaskManager = () => {
     }, []);
 
     const handleMarkComplete = async (taskId: number) => {
-        await axios.put(`/api/tasks/${taskId}`, { status: 'COMPLETED' });
-        fetchTasks();
+        // await axios.put(`/api/tasks/${taskId}`, { status: 'COMPLETED' });
+
+        // Update local state for demo/testing
+        const updated = tasks.map((task): Task =>
+            task.id === taskId ? { ...task, status: 'COMPLETED' as 'COMPLETED' } : task
+        );
+        setTasks(updated);
         setDialogVisible(false);
     };
 
@@ -43,6 +66,10 @@ const EmployeeTaskManager = () => {
         <span className={`p-tag p-tag-${task.status === 'COMPLETED' ? 'success' : 'warning'}`}>
             {task.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
         </span>
+    );
+
+    const deadlineBodyTemplate = (task: Task) => (
+        <span>{task.deadline ? new Date(task.deadline).toLocaleDateString() : '—'}</span>
     );
 
     const actionBodyTemplate = (task: Task) => (
@@ -71,8 +98,9 @@ const EmployeeTaskManager = () => {
             </div>
 
             <DataTable value={filteredTasks} responsiveLayout="scroll">
-                <Column field="title" header="Task Title" />
+                <Column field="title" header="Title" />
                 <Column field="status" header="Status" body={statusBodyTemplate} />
+                <Column field="deadline" header="Deadline" body={deadlineBodyTemplate} />
                 <Column header="Actions" body={actionBodyTemplate} />
             </DataTable>
 
@@ -80,11 +108,14 @@ const EmployeeTaskManager = () => {
                 {selectedTask && (
                     <>
                         <h5>{selectedTask.title}</h5>
-                        <p>{selectedTask.description}</p>
+                        <p><strong>Description:</strong> {selectedTask.description}</p>
                         <p><strong>Assigned to:</strong> {selectedTask.assignedTo}</p>
+                        <p><strong>Status:</strong> {selectedTask.status}</p>
+                        <p><strong>Deadline:</strong> {selectedTask.deadline ? new Date(selectedTask.deadline).toLocaleDateString() : '—'}</p>
                         <Button
                             label="Mark as Completed"
                             icon="pi pi-check"
+                            className="mt-3"
                             disabled={selectedTask.status === 'COMPLETED'}
                             onClick={() => handleMarkComplete(selectedTask.id)}
                         />

@@ -4,4 +4,5 @@ export interface Task {
     description: string;
     assignedTo: string;
     status: 'IN_PROGRESS' | 'COMPLETED';
+    deadline?: Date;
 }
