@@ -7,22 +7,22 @@ import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import AppNavbar from './components/AppNavbar.tsx';
-import Header from './components/Header.tsx';
-import MainGrid from './components/MainGrid.tsx';
-import SideMenu from './components/SideMenu.tsx';
-import AppTheme from '../shared-theme/AppTheme.tsx';
+import AppNavbar from './components/AppNavbar.jsx';
+import Header from './components/Header.jsx';
+import MainGrid from './components/MainGrid.jsx';
+import SideMenu from './components/SideMenu.jsx';
+import AppTheme from '../shared-theme/AppTheme.jsx';
 import {
   chartsCustomizations,
   dataGridCustomizations,
   datePickersCustomizations,
   treeViewCustomizations,
-} from './theme/customizations/index.ts';
+} from './theme/customizations/index.js';
 import AdminTable from './components/AdminTable.js';
 import { Button, hslToRgb } from '@mui/material';
-import Card from "./components/Card.tsx";
+import Card from "./components/Card.jsx";
 import axios from 'axios';
-import { Conge } from './interfaces/conge.ts';
+import { Conge } from './interfaces/conge.js';
 import { useEffect, useState } from 'react';
 
 const xThemeComponents = {
