@@ -25,6 +25,11 @@ const employeeSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  department: {
+    type: String,
+    enum: ["Administrative", "Math", "Informatics", "Technology"],
+    required: true,
+  },
   address: {
     type: String,
     required: true,
@@ -74,6 +79,18 @@ employeeSchema.pre("remove", async function (next) {
       }).save();
     }
     await this.model("Leave").deleteMany({ requestedBy: this._id });
+
+    const tasks = await this.model("Task").find({ assignedTo: this._id });
+    for (const task of tasks) {
+      await new AuditLog({
+        action: "Delete",
+        entity: "Task",
+        entityId: task._id,
+        performedBy: this.userId || null,
+        details: task,
+      }).save();
+    }
+    await this.model("Task").deleteMany({ assignedTo: this._id });
 
     // Log deletion of documents requested by this employee
     const documents = await this.model("Document").find({

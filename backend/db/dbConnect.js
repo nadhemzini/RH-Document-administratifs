@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
-import { AuditLog } from "./AuditLog.js";
+import { AuditLog } from "../models/AuditLog.js";
+import {User} from "../models/User.js";
+import {Employee} from "../models/Employee.js";
+import {Admin} from "../models/Admin.js";
+import {Task} from "../models/Task.js";
+import {Document} from "../models/Document.js";
+import {Leave} from "../models/Leave.js";
 
 export const connectDB = async () => {
   try {
@@ -72,8 +78,6 @@ const models = [
   "User",
   "Employee",
   "Admin",
-  "Professor",
-  "AdministrativeEmployee",
   "Task",
   "Document",
   "Leave",

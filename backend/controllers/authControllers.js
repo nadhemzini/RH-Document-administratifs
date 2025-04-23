@@ -20,7 +20,7 @@ export const login = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid credentials" });
     }
-    generateTokenAndSetCookie(res, user._id);
+    const token = generateTokenAndSetCookie(res, user._id); // Generate token
     user.lastLogin = Date.now();
     user.status = "active";
     await user.save();
@@ -28,6 +28,7 @@ export const login = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
+      token, // Include token in the response body
       user: {
         ...user._doc,
         password: undefined,

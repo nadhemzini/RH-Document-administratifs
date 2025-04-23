@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const leaveSchema = new mongoose.Schema({
   type: {
     type: String,
