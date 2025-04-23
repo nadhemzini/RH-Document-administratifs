@@ -41,4 +41,22 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+userSchema.pre("remove", async function (next) {
+  try {
+    // Remove the user from all discriminator collections
+    const discriminatorModels = Object.keys(mongoose.connection.models).filter(
+      (modelName) =>
+        mongoose.connection.models[modelName].baseModelName === "User"
+    );
+
+    for (const modelName of discriminatorModels) {
+      await mongoose.connection.models[modelName].findByIdAndDelete(this._id);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 export const User = mongoose.model("User", userSchema);

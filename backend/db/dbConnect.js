@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { AuditLog } from "./AuditLog.js";
 
 export const connectDB = async () => {
   try {
@@ -9,3 +10,81 @@ export const connectDB = async () => {
     process.exit(1);
   }
 };
+
+const logUpdate = async function (next) {
+  try {
+    const updatedFields = this.getUpdate();
+    const originalDocument = await this.model.findOne(this.getQuery());
+
+    await new AuditLog({
+      action: "Update",
+      entity: this.model.modelName,
+      entityId: originalDocument._id,
+      performedBy: this.options.userId || null, // Pass userId in query options
+      details: {
+        before: originalDocument,
+        after: updatedFields,
+      },
+    }).save();
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const logInsert = async function (next) {
+  try {
+    await new AuditLog({
+      action: "Insert",
+      entity: this.constructor.modelName,
+      entityId: this._id,
+      performedBy: this.userId || null, // Pass userId in the document if available
+      details: this,
+    }).save();
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const logDelete = async function (next) {
+  try {
+    const documentToDelete = await this.model.findOne(this.getQuery());
+
+    await new AuditLog({
+      action: "Delete",
+      entity: this.model.modelName,
+      entityId: documentToDelete._id,
+      performedBy: this.options.userId || null, // Pass userId in query options
+      details: documentToDelete,
+    }).save();
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Apply the middleware to all models
+const models = [
+  "User",
+  "Employee",
+  "Admin",
+  "Professor",
+  "AdministrativeEmployee",
+  "Task",
+  "Document",
+  "Leave",
+];
+models.forEach((modelName) => {
+  const model = mongoose.model(modelName);
+  model.schema.pre("findOneAndUpdate", logUpdate);
+  model.schema.pre("updateOne", logUpdate);
+  model.schema.pre("updateMany", logUpdate);
+  model.schema.pre("save", logInsert);
+  model.schema.pre("findOneAndDelete", logDelete);
+  model.schema.pre("deleteOne", logDelete);
+  model.schema.pre("deleteMany", logDelete);
+});
