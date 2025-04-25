@@ -1,0 +1,191 @@
+import { Leave } from "../models/leaveModel.js";
+import { Employee } from "../models/Employee.js";
+import { Admin } from "../models/Admin.js";
+
+export const requestLeave = async (req, res) => {
+  const { startDate, endDate, reason } = req.body;
+  try {
+    if (!startDate || !endDate || !reason) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    const leave = new Leave({
+      requestedBy: req.userId,
+      startDate,
+      endDate,
+      reason,
+      status: "Pending",
+    });
+
+    await leave.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Leave request submitted successfully",
+      leave,
+    });
+  } catch (error) {
+    console.error(`Request Leave Error: ${error.message}`);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteLeaveRequest = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const leave = await Leave.findOne({
+      _id: id,
+      requestedBy: req.userId,
+      status: "Pending",
+    });
+    if (!leave) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Pending leave request not found" });
+    }
+
+    await leave.remove();
+
+    res.status(200).json({
+      success: true,
+      message: "Leave request deleted successfully",
+    });
+  } catch (error) {
+    console.error(`Delete Leave Request Error: ${error.message}`);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const rejectLeave = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const leave = await Leave.findById(id);
+    if (!leave) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Leave request not found" });
+    }
+
+    leave.status = "Rejected";
+    leave.approvedBy = req.userId;
+    await leave.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Leave request rejected successfully",
+      leave,
+    });
+  } catch (error) {
+    console.error(`Reject Leave Error: ${error.message}`);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const approveLeave = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const leave = await Leave.findById(id);
+    if (!leave) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Leave request not found" });
+    }
+
+    leave.status = "Approved";
+    leave.approvedBy = req.userId;
+    await leave.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Leave request approved successfully",
+      leave,
+    });
+  } catch (error) {
+    console.error(`Approve Leave Error: ${error.message}`);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const addLeave = async (req, res) => {
+  const { requestedBy, startDate, endDate, reason, status } = req.body;
+  try {
+    if (!requestedBy || !startDate || !endDate || !reason || !status) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    const leave = new Leave({
+      requestedBy,
+      startDate,
+      endDate,
+      reason,
+      status,
+      approvedBy: req.userId,
+    });
+
+    await leave.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Leave added successfully",
+      leave,
+    });
+  } catch (error) {
+    console.error(`Add Leave Error: ${error.message}`);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const updateLeave = async (req, res) => {
+  const { id } = req.params;
+  const { startDate, endDate, reason, status } = req.body;
+  try {
+    const leave = await Leave.findById(id);
+    if (!leave) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Leave not found" });
+    }
+
+    if (startDate) leave.startDate = startDate;
+    if (endDate) leave.endDate = endDate;
+    if (reason) leave.reason = reason;
+    if (status) leave.status = status;
+
+    await leave.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Leave updated successfully",
+      leave,
+    });
+  } catch (error) {
+    console.error(`Update Leave Error: ${error.message}`);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteLeave = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const leave = await Leave.findById(id);
+    if (!leave) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Leave not found" });
+    }
+
+    await leave.remove();
+
+    res.status(200).json({
+      success: true,
+      message: "Leave deleted successfully",
+    });
+  } catch (error) {
+    console.error(`Delete Leave Error: ${error.message}`);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { AuditLog } from "../models/AuditLog.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,11 +22,6 @@ const userSchema = new mongoose.Schema(
       enum: ["employee", "enseignant", "admin", "RH"],
       default: "employee",
     },
-    isAdmin: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
     lastLogin: {
       type: Date,
       default: null,
@@ -38,21 +34,41 @@ const userSchema = new mongoose.Schema(
     resetPasswordToken: String,
     restPasswordExpire: Date,
   },
-  { timestamps: true }
+  { timestamps: true, discriminatorKey: "kind" }
 );
+
+userSchema.pre("save", async function (next) {
+  try {
+    if (this.isNew) {
+      await new AuditLog({
+        action: "Create",
+        entity: "User",
+        entityId: this._id,
+        details: this,
+      }).save();
+    } else {
+      const original = await this.constructor.findById(this._id);
+      await new AuditLog({
+        action: "Update",
+        entity: "User",
+        entityId: this._id,
+        details: { before: original, after: this },
+      }).save();
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 userSchema.pre("remove", async function (next) {
   try {
-    // Remove the user from all discriminator collections
-    const discriminatorModels = Object.keys(mongoose.connection.models).filter(
-      (modelName) =>
-        mongoose.connection.models[modelName].baseModelName === "User"
-    );
-
-    for (const modelName of discriminatorModels) {
-      await mongoose.connection.models[modelName].findByIdAndDelete(this._id);
-    }
-
+    await new AuditLog({
+      action: "Delete",
+      entity: "User",
+      entityId: this._id,
+      details: this,
+    }).save();
     next();
   } catch (error) {
     next(error);

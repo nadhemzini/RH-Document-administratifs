@@ -5,38 +5,38 @@ import { AuditLog } from "./AuditLog.js";
 const employeeSchema = new mongoose.Schema({
   nationalId: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
   },
   dateOfBirth: {
     type: Date,
-    required: true,
+    required: false,
   },
   gender: {
     type: String,
     enum: ["Male", "Female"],
-    required: true,
+    required: false,
   },
   maritalStatus: {
     type: String,
-    required: true,
+    required: false,
   },
   employmentDate: {
     type: Date,
-    required: true,
+    required: false,
   },
   department: {
     type: String,
     enum: ["Administrative", "Math", "Informatics", "Technology"],
-    required: true,
+    required: false,
   },
   address: {
     type: String,
-    required: true,
+    required: false,
   },
   phone: {
     type: String,
-    required: true,
+    required: false,
   },
   disability: {
     type: Boolean,
@@ -44,7 +44,7 @@ const employeeSchema = new mongoose.Schema({
   },
   grade: {
     type: String,
-    required: true,
+    required: false,
   },
   gradeDate: {
     type: Date,
@@ -56,12 +56,7 @@ const employeeSchema = new mongoose.Schema({
   academicYear: {
     type: String,
     required: true,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    unique: true,
+    default: new Date().getFullYear().toString(), 
   },
 });
 
