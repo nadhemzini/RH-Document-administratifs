@@ -3,9 +3,9 @@ import { Employee } from "../models/Employee.js";
 import { Admin } from "../models/Admin.js";
 
 export const addTask = async (req, res) => {
-  const { title, description, assignedTo, dueDate } = req.body;
+  const { title, description, assignedTo, deadline } = req.body;
   try {
-    if (!title || !description || !assignedTo || !dueDate) {
+    if (!title || !description || !assignedTo || !deadline) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
@@ -22,7 +22,7 @@ export const addTask = async (req, res) => {
       title,
       description,
       assignedTo,
-      dueDate,
+      deadline,
       assignedBy: req.userId,
       status: "Pending",
     });
@@ -42,7 +42,7 @@ export const addTask = async (req, res) => {
 
 export const updateTask = async (req, res) => {
   const { id } = req.params;
-  const { title, description, dueDate } = req.body;
+  const { title, description, deadline } = req.body;
   try {
     const task = await Task.findById(id);
     if (!task) {
@@ -59,7 +59,7 @@ export const updateTask = async (req, res) => {
 
     if (title) task.title = title;
     if (description) task.description = description;
-    if (dueDate) task.dueDate = dueDate;
+    if (deadline) task.deadline = deadline;
 
     await task.save();
 
