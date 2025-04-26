@@ -56,7 +56,7 @@ const employeeSchema = new mongoose.Schema({
   academicYear: {
     type: String,
     required: true,
-    default: new Date().getFullYear().toString(), 
+    default: new Date().getFullYear().toString(),
   },
 });
 
@@ -69,7 +69,7 @@ employeeSchema.pre("remove", async function (next) {
         action: "Delete",
         entity: "Leave",
         entityId: leave._id,
-        performedBy: this.userId || null,
+        performedBy: this._id, // Set performedBy to the user or employee ID
         details: leave,
       }).save();
     }
@@ -81,7 +81,7 @@ employeeSchema.pre("remove", async function (next) {
         action: "Delete",
         entity: "Task",
         entityId: task._id,
-        performedBy: this.userId || null,
+        performedBy: this._id, // Set performedBy to the user or employee ID
         details: task,
       }).save();
     }
@@ -96,7 +96,7 @@ employeeSchema.pre("remove", async function (next) {
         action: "Delete",
         entity: "Document",
         entityId: document._id,
-        performedBy: this.userId || null,
+        performedBy: this._id, // Set performedBy to the user or employee ID
         details: document,
       }).save();
     }

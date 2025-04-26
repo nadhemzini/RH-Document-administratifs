@@ -1,6 +1,6 @@
-import { Task } from "../models/Task";
-import { Employee } from "../models/Employee";
-import { Admin } from "../models/Admin";
+import { Task } from "../models/Task.js";
+import { Employee } from "../models/Employee.js";
+import { Admin } from "../models/Admin.js";
 
 export const addTask = async (req, res) => {
   const { title, description, assignedTo, dueDate } = req.body;

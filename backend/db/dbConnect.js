@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 import { AuditLog } from "../models/AuditLog.js";
-import {User} from "../models/User.js";
-import {Employee} from "../models/Employee.js";
-import {Admin} from "../models/Admin.js";
-import {Task} from "../models/Task.js";
-import {Document} from "../models/Document.js";
-import {Leave} from "../models/Leave.js";
+import { User } from "../models/User.js";
+import { Employee } from "../models/Employee.js";
+import { Admin } from "../models/Admin.js";
+import { Task } from "../models/Task.js";
+import { Document } from "../models/Document.js";
+import { Leave } from "../models/Leave.js";
 
 export const connectDB = async () => {
   try {
@@ -45,7 +45,7 @@ const logInsert = async function (next) {
       action: "Insert",
       entity: this.constructor.modelName,
       entityId: this._id,
-      performedBy: this.userId || null, // Pass userId in the document if available
+      performedBy: "System", // Set performedBy to 'System' for system-level actions
       details: this,
     }).save();
 
@@ -74,14 +74,7 @@ const logDelete = async function (next) {
 };
 
 // Apply the middleware to all models
-const models = [
-  "User",
-  "Employee",
-  "Admin",
-  "Task",
-  "Document",
-  "Leave",
-];
+const models = ["User", "Employee", "Admin", "Task", "Document", "Leave"];
 models.forEach((modelName) => {
   const model = mongoose.model(modelName);
   model.schema.pre("findOneAndUpdate", logUpdate);

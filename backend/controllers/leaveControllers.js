@@ -1,4 +1,4 @@
-import { Leave } from "../models/leaveModel.js";
+import { Leave } from "../models/Leave.js";
 import { Employee } from "../models/Employee.js";
 import { Admin } from "../models/Admin.js";
 

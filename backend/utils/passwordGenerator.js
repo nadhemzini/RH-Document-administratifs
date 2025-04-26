@@ -6,7 +6,7 @@ export const generatePassword = (length = 10) => {
     numbers: true,
     symbols: true,
     uppercase: true,
-    excludeSimilarCharacters: true,
+    excludeSimilarCharacters: false,
   });
 };
 

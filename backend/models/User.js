@@ -45,14 +45,17 @@ userSchema.pre("save", async function (next) {
         entity: "User",
         entityId: this._id,
         details: this,
+        performedBy: this._id, // Set performedBy to the user being created
       }).save();
-    } else {
+    } else if (!this.isModified("lastLogin") && !this.isModified("status")) {
+      // Skip logging for login and status updates
       const original = await this.constructor.findById(this._id);
       await new AuditLog({
         action: "Update",
         entity: "User",
         entityId: this._id,
         details: { before: original, after: this },
+        performedBy: this._id, // Set performedBy to the user being updated
       }).save();
     }
     next();
@@ -68,6 +71,7 @@ userSchema.pre("remove", async function (next) {
       entity: "User",
       entityId: this._id,
       details: this,
+      performedBy: this._id, // Set performedBy to the user being deleted
     }).save();
     next();
   } catch (error) {
