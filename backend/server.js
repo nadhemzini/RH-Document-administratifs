@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import { connectDB } from "./db/dbConnect.js";
 import authRoutes from "./routes/authRoutes.js";
 import crudRoutes from "./routes/crudRoutes.js";
+import leaveRoutes from "./routes/leaveRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
 import cors from 'cors';
 
 
@@ -23,6 +25,8 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", crudRoutes);
+app.use("/api/leave", leaveRoutes);
+app.use("/api/task", taskRoutes);
 
 app.listen(PORT, () => {
   connectDB();
