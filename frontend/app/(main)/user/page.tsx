@@ -9,7 +9,9 @@ import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import { Dropdown } from 'primereact/dropdown';
 import { Avatar } from 'primereact/avatar';
-import { User } from '@/types/User';
+import { getAllUsers, createUser, updateUser, deleteUser } from '../../../service/userService'; // Adjust this path if needed
+import { User } from '@/types/User'; // Adjust this path if needed
+
 
 const emptyUser: User = {
     id: '',
@@ -19,8 +21,8 @@ const emptyUser: User = {
 };
 
 export default function UserCrud() {
-    const [users, setUsers] = useState<User[] | null>(null);
-    const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [onlineUsers, setOnlineUsers] = useState<number[]>([]);
     const [userDialog, setUserDialog] = useState(false);
     const [deleteUserDialog, setDeleteUserDialog] = useState(false);
     const [deleteUsersDialog, setDeleteUsersDialog] = useState(false);
@@ -38,17 +40,17 @@ export default function UserCrud() {
     ];
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            const fakeData: User[] = [
-                { id: '1', name: 'John Doe', email: 'john@example.com', role: 'admin' },
-                { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'enseignant' },
-            ];
-            setUsers(fakeData);
-            setOnlineUsers(['1']);
-        };
-
         fetchUsers();
     }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const data = await getAllUsers();
+            setUsers(data);
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load users', life: 3000 });
+        }
+    };
 
     const openNew = () => {
         setUser(emptyUser);
@@ -62,10 +64,9 @@ export default function UserCrud() {
     };
 
     const hideDeleteUserDialog = () => setDeleteUserDialog(false);
-
     const hideDeleteUsersDialog = () => setDeleteUsersDialog(false);
 
-    const saveUser = () => {
+    const saveUser = async () => {
         setSubmitted(true);
         if (!user.name.trim() || !user.email.trim() || !user.role) {
             toast.current?.show({
@@ -77,30 +78,20 @@ export default function UserCrud() {
             return;
         }
 
-        let _users = [...(users || [])];
-        if (user.id) {
-            const index = _users.findIndex((u) => u.id === user.id);
-            _users[index] = user;
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Successful',
-                detail: 'User Updated',
-                life: 3000,
-            });
-        } else {
-            user.id = createId();
-            _users.push(user);
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Successful',
-                detail: 'User Created',
-                life: 3000,
-            });
+        try {
+            if (user.id) {
+                await updateUser(Number(user.id), user);
+                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'User Updated', life: 3000 });
+            } else {
+                await createUser(user);
+                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'User Created', life: 3000 });
+            }
+            fetchUsers();
+            setUserDialog(false);
+            setUser(emptyUser);
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Action failed', life: 3000 });
         }
-
-        setUsers(_users);
-        setUserDialog(false);
-        setUser(emptyUser);
     };
 
     const editUser = (user: User) => {
@@ -113,41 +104,39 @@ export default function UserCrud() {
         setDeleteUserDialog(true);
     };
 
-    const deleteUser = () => {
-        let _users = users?.filter((val) => val.id !== user.id) || [];
-        setUsers(_users);
+    const deleteUserById = async () => {
+        try {
+            await deleteUser(Number(user.id));
+            toast.current?.show({ severity: 'success', summary: 'Success', detail: 'User Deleted', life: 3000 });
+            fetchUsers();
+        } catch {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Deletion failed', life: 3000 });
+        }
         setDeleteUserDialog(false);
-        setUser(emptyUser);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
     };
 
-    const confirmDeleteSelected = () => {
-        setDeleteUsersDialog(true);
-    };
+    const confirmDeleteSelected = () => setDeleteUsersDialog(true);
 
-    const deleteSelectedUsers = () => {
-        let _users = users?.filter((val) => !selectedUsers?.includes(val)) || [];
-        setUsers(_users);
+    const deleteSelectedUsers = async () => {
+        try {
+            for (const u of selectedUsers || []) {
+                await deleteUser(Number(u.id));
+            }
+            toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Selected Users Deleted', life: 3000 });
+            fetchUsers();
+        } catch {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Batch deletion failed', life: 3000 });
+        }
         setSelectedUsers(null);
         setDeleteUsersDialog(false);
-        toast.current?.show({
-            severity: 'success',
-            summary: 'Successful',
-            detail: 'Selected Users Deleted',
-            life: 3000,
-        });
     };
 
-    const exportCSV = () => {
-        dt.current?.exportCSV();
-    };
+    const exportCSV = () => dt.current?.exportCSV();
 
     const onInputChange = (e: any, name: keyof User) => {
         const val = e.target ? e.target.value : e.value;
         setUser({ ...user, [name]: val });
     };
-
-    const createId = () => Math.random().toString(36).substr(2, 9);
 
     const actionBodyTemplate = (rowData: User) => (
         <>
@@ -168,15 +157,6 @@ export default function UserCrud() {
         </div>
     );
 
-    const statusTemplate = (rowData: User) => {
-        const isOnline = onlineUsers.includes(rowData.id);
-        return (
-            <span className={`px-2 py-1 rounded text-white text-sm ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}>
-                {isOnline ? 'Online' : 'Offline'}
-            </span>
-        );
-    };
-
     return (
         <div className="card">
             <Toast ref={toast} />
@@ -193,19 +173,14 @@ export default function UserCrud() {
                         disabled={!selectedUsers || selectedUsers.length === 0}
                     />
                 </div>
-                <Button
-                    label="Export CSV"
-                    icon="pi pi-upload"
-                    className="p-button-help"
-                    onClick={exportCSV}
-                />
+                <Button label="Export CSV" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />
             </div>
 
             <DataTable
                 ref={dt}
-                value={users || []}
+                value={users}
                 selection={selectedUsers}
-                onSelectionChange={(e) => setSelectedUsers(e.value as User[])}
+                onSelectionChange={(e) => setSelectedUsers(e.value)}
                 dataKey="id"
                 paginator
                 rows={10}
@@ -213,15 +188,14 @@ export default function UserCrud() {
                 selectionMode="multiple"
                 header="Manage Users"
             >
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                 <Column header="User" body={avatarNameTemplate} />
                 <Column field="email" header="Email" sortable />
                 <Column field="role" header="Role" sortable />
-                <Column header="Status" body={statusTemplate} />
                 <Column body={actionBodyTemplate} headerStyle={{ width: '10rem' }} />
             </DataTable>
 
-            {/* Dialog: Add/Edit User */}
+            {/* Dialogs */}
             <Dialog visible={userDialog} style={{ width: '500px' }} header="User Details" modal className="p-fluid" onHide={hideDialog}>
                 <div className="field">
                     <label htmlFor="name">Name</label>
@@ -241,7 +215,6 @@ export default function UserCrud() {
                 </div>
             </Dialog>
 
-            {/* Dialog: Confirm Single Deletion */}
             <Dialog
                 visible={deleteUserDialog}
                 style={{ width: '450px' }}
@@ -250,7 +223,7 @@ export default function UserCrud() {
                 footer={
                     <>
                         <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
-                        <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteUser} />
+                        <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteUserById} />
                     </>
                 }
                 onHide={hideDeleteUserDialog}
@@ -260,7 +233,6 @@ export default function UserCrud() {
                 </div>
             </Dialog>
 
-            {/* Dialog: Confirm Multiple Deletions */}
             <Dialog
                 visible={deleteUsersDialog}
                 style={{ width: '450px' }}
