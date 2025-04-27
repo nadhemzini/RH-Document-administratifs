@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 import { classNames } from 'primereact/utils';
-import React, { forwardRef, useContext, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { AppTopbarRef } from '@/types';
 import { LayoutContext } from './context/layoutcontext';
 import { InputSwitch } from 'primereact/inputswitch';
@@ -19,7 +19,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             label: 'Sign Out',
             icon: 'pi pi-sign-out',
             command: () => {
-                router.push('/auth/login');
+                signOut();
+
             }
         },
         {
@@ -30,7 +31,13 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             }
         }
     ];
+    const signOut = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
 
+
+        router.replace('/auth/login');
+    };
     const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
     const menubuttonRef = useRef(null);
     const topbarmenuRef = useRef(null);

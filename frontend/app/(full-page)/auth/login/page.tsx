@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
@@ -24,6 +24,17 @@ const LoginPage = () => {
         'surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden',
         { 'p-input-filled': layoutConfig.inputStyle === 'filled' }
     );
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            // If logged in, redirect and block back button
+            router.replace('/dashboard'); // adjust your route
+            window.history.pushState(null, '', window.location.href);
+            window.onpopstate = function () {
+                window.history.go(1);
+            };
+        }
+    }, []);
 
     const handleLogin = async () => {
         try {

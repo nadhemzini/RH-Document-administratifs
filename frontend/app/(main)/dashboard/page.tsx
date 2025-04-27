@@ -9,6 +9,7 @@ import { Button } from 'primereact/button';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 // Attach autoTable to jsPDF instance
 // Extend jsPDF type to include autoTable
@@ -118,55 +119,58 @@ const HRDashboard = () => {
     };
 
     return (
-        <div className="grid p-4">
-            {/* KPI Cards */}
-            <div className="grid">
-                <Card title="Total Employees" icon="pi pi-users" value={totalEmployees} />
-                <Card title="Total Admins" icon="pi pi-user" value={totalAdmins} />
-                <Card title="Total Leaves" icon="pi pi-calendar-plus" value={totalLeaves} />
-                <Card title="Total Absences" icon="pi pi-calendar-times" value={totalAbsences} />
-            </div>
+        <ProtectedPage>
 
-            {/* Charts */}
-            <div className="grid mt-4">
-                <div className="col-12 md:col-6">
-                    <div className="card">
-                        <h5>Absence Overview</h5>
-                        <Chart type="line" data={absenceChart} />
+            <div className="grid p-4">
+                {/* KPI Cards */}
+                <div className="grid">
+                    <Card title="Total Employees" icon="pi pi-users" value={totalEmployees} />
+                    <Card title="Total Admins" icon="pi pi-user" value={totalAdmins} />
+                    <Card title="Total Leaves" icon="pi pi-calendar-plus" value={totalLeaves} />
+                    <Card title="Total Absences" icon="pi pi-calendar-times" value={totalAbsences} />
+                </div>
+
+                {/* Charts */}
+                <div className="grid mt-4">
+                    <div className="col-12 md:col-6">
+                        <div className="card">
+                            <h5>Absence Overview</h5>
+                            <Chart type="line" data={absenceChart} />
+                        </div>
+                    </div>
+                    <div className="col-12 md:col-6">
+                        <div className="card">
+                            <h5>User Role Distribution</h5>
+                            <Chart type="pie" data={roleChart} />
+                        </div>
                     </div>
                 </div>
-                <div className="col-12 md:col-6">
-                    <div className="card">
-                        <h5>User Role Distribution</h5>
-                        <Chart type="pie" data={roleChart} />
+
+                {/* Filters */}
+                <div className="card mt-4">
+                    <h5>Filter Users</h5>
+                    <div className="flex gap-4 mb-3">
+                        <Dropdown value={filters.gender} options={['Homme', 'Femme']} placeholder="Select Gender" onChange={e => setFilters({ ...filters, gender: e.value })} />
+                        <Dropdown value={filters.role} options={['admin', 'employee', 'RH']} placeholder="Select Role" onChange={e => setFilters({ ...filters, role: e.value })} />
+                        <Dropdown value={filters.grade} options={['A1', 'A2', 'B1']} placeholder="Select Grade" onChange={e => setFilters({ ...filters, grade: e.value })} />
+                    </div>
+
+                    {/* Data Table */}
+                    <DataTable value={filteredUsers} paginator rows={5}>
+                        <Column field="name" header="Name" />
+                        <Column field="email" header="Email" />
+                        <Column field="gender" header="Gender" />
+                        <Column field="role" header="Role" />
+                        <Column field="grade" header="Grade" />
+                    </DataTable>
+
+                    {/* PDF Button */}
+                    <div className="mt-3">
+                        <Button icon="pi pi-file-pdf" label="Export PDF" onClick={handleExportPDF} />
                     </div>
                 </div>
             </div>
-
-            {/* Filters */}
-            <div className="card mt-4">
-                <h5>Filter Users</h5>
-                <div className="flex gap-4 mb-3">
-                    <Dropdown value={filters.gender} options={['Homme', 'Femme']} placeholder="Select Gender" onChange={e => setFilters({ ...filters, gender: e.value })} />
-                    <Dropdown value={filters.role} options={['admin', 'employee', 'RH']} placeholder="Select Role" onChange={e => setFilters({ ...filters, role: e.value })} />
-                    <Dropdown value={filters.grade} options={['A1', 'A2', 'B1']} placeholder="Select Grade" onChange={e => setFilters({ ...filters, grade: e.value })} />
-                </div>
-
-                {/* Data Table */}
-                <DataTable value={filteredUsers} paginator rows={5}>
-                    <Column field="name" header="Name" />
-                    <Column field="email" header="Email" />
-                    <Column field="gender" header="Gender" />
-                    <Column field="role" header="Role" />
-                    <Column field="grade" header="Grade" />
-                </DataTable>
-
-                {/* PDF Button */}
-                <div className="mt-3">
-                    <Button icon="pi pi-file-pdf" label="Export PDF" onClick={handleExportPDF} />
-                </div>
-            </div>
-        </div>
+        </ProtectedPage>
     );
 };
 

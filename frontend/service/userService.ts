@@ -1,7 +1,7 @@
 import axios from '../app/axios'; // ✅ uses token-enabled axios instance
 import { User } from '@/types/User'; // Adjust this path if needed
 
-const API_URL = '/users'; // base endpoint
+const API_URL = '/user'; // base endpoint
 
 
 // Get all users
@@ -18,7 +18,7 @@ export const getUserById = async (id: number) => {
 
 // Create a new user
 export const createUser = async (user: User) => {
-    const res = await axios.post(API_URL, user);
+    const res = await axios.post(`${API_URL}/addUser`, user);
     return res.data;
 };
 
