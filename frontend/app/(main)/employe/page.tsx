@@ -8,15 +8,15 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import { Dropdown } from 'primereact/dropdown';
-import { Avatar } from 'primereact/avatar';
-import { Employee } from '@/types/Employee';  // Assuming your Employee interface is in the correct path
+import employeeService from '../../../service/employeeService';
+import { Employee } from '@/types/Employee';
 
 const emptyEmployee: Employee = {
     id: 0,
     nom: '',
-    cin: '',
-    email: '',
     prenom: '',
+    email: '',
+    cin: '',
     sexe: 'Homme',
     grade: '',
     departement: '',
@@ -27,7 +27,7 @@ const emptyEmployee: Employee = {
 };
 
 export default function EmployeeCrud() {
-    const [employees, setEmployees] = useState<Employee[] | null>(null);
+    const [employees, setEmployees] = useState<Employee[]>([]);
     const [employeeDialog, setEmployeeDialog] = useState(false);
     const [deleteEmployeeDialog, setDeleteEmployeeDialog] = useState(false);
     const [deleteEmployeesDialog, setDeleteEmployeesDialog] = useState(false);
@@ -36,7 +36,7 @@ export default function EmployeeCrud() {
     const [submitted, setSubmitted] = useState(false);
 
     const toast = useRef<Toast>(null);
-    const dt = useRef<DataTable<any>>(null);
+    const dt = useRef<DataTable<Employee[]>>(null);
 
     const sexeOptions = [
         { label: 'Homme', value: 'Homme' },
@@ -54,16 +54,17 @@ export default function EmployeeCrud() {
     ];
 
     useEffect(() => {
-        const fetchEmployees = async () => {
-            const fakeData: Employee[] = [
-                { id: 1, nom: 'John', cin: '123456', email: 'john@example.com', prenom: 'Doe', sexe: 'Homme', grade: 'A', departement: 'HR', adresse: '123 Main St', anciennete: 5, handicap: false, natureTravail: 'Full-time' },
-                { id: 2, nom: 'Jane', cin: '654321', email: 'jane@example.com', prenom: 'Smith', sexe: 'Femme', grade: 'B', departement: 'Finance', adresse: '456 Oak St', anciennete: 3, handicap: true, natureTravail: 'Part-time' },
-            ];
-            setEmployees(fakeData);
-        };
-
-        fetchEmployees();
+        loadEmployees();
     }, []);
+
+    const loadEmployees = async () => {
+        try {
+            const data = await employeeService.getAllEmployees();
+            setEmployees(data);
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load employees' });
+        }
+    };
 
     const openNew = () => {
         setEmployee(emptyEmployee);
@@ -77,80 +78,72 @@ export default function EmployeeCrud() {
     };
 
     const hideDeleteEmployeeDialog = () => setDeleteEmployeeDialog(false);
-
     const hideDeleteEmployeesDialog = () => setDeleteEmployeesDialog(false);
 
-    const saveEmployee = () => {
+    const saveEmployee = async () => {
         setSubmitted(true);
-        if (!employee.nom.trim() || !employee.email.trim() || !employee.grade) {
+
+        if (!employee.nom || !employee.email || !employee.grade) {
             toast.current?.show({
-                severity: 'error',
-                summary: 'Validation Failed',
-                detail: 'All fields are required.',
-                life: 3000,
+                severity: 'warn',
+                summary: 'Missing Fields',
+                detail: 'Nom, Email and Grade are required',
             });
             return;
         }
 
-        let _employees = [...(employees || [])];
-        if (employee.id) {
-            const index = _employees.findIndex((e) => e.id === employee.id);
-            _employees[index] = employee;
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Successful',
-                detail: 'Employee Updated',
-                life: 3000,
-            });
-        } else {
-            employee.id = createId();
-            _employees.push(employee);
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Successful',
-                detail: 'Employee Created',
-                life: 3000,
-            });
-        }
+        try {
+            if (employee.id) {
+                await employeeService.updateEmployee(employee.id, employee);
+                toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Employee updated' });
+            } else {
+                await employeeService.createEmployee(employee);
+                toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Employee created' });
+            }
 
-        setEmployees(_employees);
-        setEmployeeDialog(false);
-        setEmployee(emptyEmployee);
+            setEmployeeDialog(false);
+            loadEmployees();
+            setEmployee(emptyEmployee);
+        } catch {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Operation failed' });
+        }
     };
 
-    const editEmployee = (employee: Employee) => {
-        setEmployee({ ...employee });
+    const editEmployee = (emp: Employee) => {
+        setEmployee({ ...emp });
         setEmployeeDialog(true);
     };
 
-    const confirmDeleteEmployee = (employee: Employee) => {
-        setEmployee(employee);
+    const confirmDeleteEmployee = (emp: Employee) => {
+        setEmployee(emp);
         setDeleteEmployeeDialog(true);
     };
 
-    const deleteEmployee = () => {
-        let _employees = employees?.filter((val) => val.id !== employee.id) || [];
-        setEmployees(_employees);
-        setDeleteEmployeeDialog(false);
-        setEmployee(emptyEmployee);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Employee Deleted', life: 3000 });
+    const deleteEmployee = async () => {
+        try {
+            await employeeService.deleteEmployee(employee.id);
+            toast.current?.show({ severity: 'success', summary: 'Deleted', detail: 'Employee deleted' });
+            setDeleteEmployeeDialog(false);
+            loadEmployees();
+            setEmployee(emptyEmployee);
+        } catch {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Delete failed' });
+        }
     };
 
-    const confirmDeleteSelected = () => {
-        setDeleteEmployeesDialog(true);
-    };
+    const confirmDeleteSelected = () => setDeleteEmployeesDialog(true);
 
-    const deleteSelectedEmployees = () => {
-        let _employees = employees?.filter((val) => !selectedEmployees?.includes(val)) || [];
-        setEmployees(_employees);
-        setSelectedEmployees(null);
-        setDeleteEmployeesDialog(false);
-        toast.current?.show({
-            severity: 'success',
-            summary: 'Successful',
-            detail: 'Selected Employees Deleted',
-            life: 3000,
-        });
+    const deleteSelectedEmployees = async () => {
+        try {
+            const ids = selectedEmployees?.map((e) => e.id) || [];
+            await employeeService.deleteMultipleEmployees(ids);
+            toast.current?.show({ severity: 'success', summary: 'Deleted', detail: 'Selected employees deleted' });
+            setSelectedEmployees(null);
+            setDeleteEmployeesDialog(false);
+            loadEmployees();
+        } catch {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Batch delete failed' });
+        }
     };
 
     const exportCSV = () => {
@@ -158,11 +151,9 @@ export default function EmployeeCrud() {
     };
 
     const onInputChange = (e: any, name: keyof Employee) => {
-        const val = e.target ? e.target.value : e.value;
+        const val = e.target?.value ?? e.value;
         setEmployee({ ...employee, [name]: val });
     };
-
-    const createId = () => Math.floor(Math.random() * 1000000);
 
     const actionBodyTemplate = (rowData: Employee) => (
         <>
@@ -187,27 +178,21 @@ export default function EmployeeCrud() {
                         disabled={!selectedEmployees || selectedEmployees.length === 0}
                     />
                 </div>
-                <Button
-                    label="Export CSV"
-                    icon="pi pi-upload"
-                    className="p-button-help"
-                    onClick={exportCSV}
-                />
+                <Button label="Export CSV" icon="pi pi-upload" onClick={exportCSV} />
             </div>
 
             <DataTable
                 ref={dt}
-                value={employees || []}
+                value={employees}
                 selection={selectedEmployees}
-                onSelectionChange={(e) => setSelectedEmployees(e.value as Employee[])}
+                onSelectionChange={(e) => setSelectedEmployees(e.value as Employee[] | null)}
                 dataKey="id"
-                paginator
-                rows={10}
+                paginator rows={10}
                 rowsPerPageOptions={[5, 10, 25]}
                 selectionMode="multiple"
                 header="Manage Employees"
             >
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                 <Column field="nom" header="Nom" sortable />
                 <Column field="prenom" header="Prenom" sortable />
                 <Column field="email" header="Email" sortable />
@@ -219,31 +204,24 @@ export default function EmployeeCrud() {
                 <Column body={actionBodyTemplate} headerStyle={{ width: '10rem' }} />
             </DataTable>
 
-            {/* Dialog: Add/Edit Employee */}
+            {/* Dialog: Add/Edit */}
             <Dialog visible={employeeDialog} style={{ width: '500px' }} header="Employee Details" modal className="p-fluid" onHide={hideDialog}>
-                <div className="field">
-                    <label htmlFor="nom">Nom</label>
-                    <InputText id="nom" value={employee.nom} onChange={(e) => onInputChange(e, 'nom')} required autoFocus />
-                </div>
-                <div className="field">
-                    <label htmlFor="prenom">Prenom</label>
-                    <InputText id="prenom" value={employee.prenom} onChange={(e) => onInputChange(e, 'prenom')} required />
-                </div>
-                <div className="field">
-                    <label htmlFor="email">Email</label>
-                    <InputText id="email" value={employee.email} onChange={(e) => onInputChange(e, 'email')} required />
-                </div>
+                {[
+                    ['nom', 'Nom'],
+                    ['prenom', 'Prenom'],
+                    ['email', 'Email'],
+                    ['grade', 'Grade'],
+                    ['departement', 'Departement'],
+                    ['adresse', 'Adresse'],
+                ].map(([field, label]) => (
+                    <div className="field" key={field}>
+                        <label htmlFor={field}>{label}</label>
+                        <InputText id={field} value={employee[field as keyof Employee] as string} onChange={(e) => onInputChange(e, field as keyof Employee)} />
+                    </div>
+                ))}
                 <div className="field">
                     <label htmlFor="sexe">Sexe</label>
-                    <Dropdown id="sexe" value={employee.sexe} options={sexeOptions} onChange={(e) => onInputChange(e, 'sexe')} placeholder="Select Sexe" />
-                </div>
-                <div className="field">
-                    <label htmlFor="grade">Grade</label>
-                    <InputText id="grade" value={employee.grade} onChange={(e) => onInputChange(e, 'grade')} required />
-                </div>
-                <div className="field">
-                    <label htmlFor="departement">Departement</label>
-                    <InputText id="departement" value={employee.departement} onChange={(e) => onInputChange(e, 'departement')} />
+                    <Dropdown id="sexe" value={employee.sexe} options={sexeOptions} onChange={(e) => onInputChange(e, 'sexe')} />
                 </div>
                 <div className="field">
                     <label htmlFor="natureTravail">Nature de Travail</label>
@@ -257,49 +235,30 @@ export default function EmployeeCrud() {
                     <label htmlFor="anciennete">Anciennete</label>
                     <InputText id="anciennete" value={employee.anciennete.toString()} onChange={(e) => onInputChange(e, 'anciennete')} />
                 </div>
-                <div className="field">
-                    <label htmlFor="adresse">Adresse</label>
-                    <InputText id="adresse" value={employee.adresse} onChange={(e) => onInputChange(e, 'adresse')} />
-                </div>
 
-                <div className="footer">
+                <div className="footer mt-4">
                     <Button label="Cancel" icon="pi pi-times" onClick={hideDialog} className="p-button-text" />
                     <Button label="Save" icon="pi pi-check" onClick={saveEmployee} />
                 </div>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
-            <Dialog
-                visible={deleteEmployeeDialog}
-                style={{ width: '450px' }}
-                header="Confirm"
-                modal
-                footer={
-                    <div>
-                        <Button label="No" icon="pi pi-times" onClick={hideDeleteEmployeeDialog} className="p-button-text" />
-                        <Button label="Yes" icon="pi pi-check" onClick={deleteEmployee} severity="danger" />
-                    </div>
-                }
-                onHide={hideDeleteEmployeeDialog}
-            >
-                <div>Are you sure you want to delete this employee?</div>
+            {/* Delete Dialogs */}
+            <Dialog visible={deleteEmployeeDialog} style={{ width: '450px' }} header="Confirm" modal footer={
+                <div>
+                    <Button label="No" icon="pi pi-times" onClick={hideDeleteEmployeeDialog} className="p-button-text" />
+                    <Button label="Yes" icon="pi pi-check" onClick={deleteEmployee} severity="danger" />
+                </div>
+            } onHide={hideDeleteEmployeeDialog}>
+                <p>Are you sure you want to delete this employee?</p>
             </Dialog>
 
-            {/* Delete Selected Employees Confirmation */}
-            <Dialog
-                visible={deleteEmployeesDialog}
-                style={{ width: '450px' }}
-                header="Confirm"
-                modal
-                footer={
-                    <div>
-                        <Button label="No" icon="pi pi-times" onClick={hideDeleteEmployeesDialog} className="p-button-text" />
-                        <Button label="Yes" icon="pi pi-check" onClick={deleteSelectedEmployees} severity="danger" />
-                    </div>
-                }
-                onHide={hideDeleteEmployeesDialog}
-            >
-                <>Are you sure you want to delete the selected employees?</>
+            <Dialog visible={deleteEmployeesDialog} style={{ width: '450px' }} header="Confirm" modal footer={
+                <div>
+                    <Button label="No" icon="pi pi-times" onClick={hideDeleteEmployeesDialog} className="p-button-text" />
+                    <Button label="Yes" icon="pi pi-check" onClick={deleteSelectedEmployees} severity="danger" />
+                </div>
+            } onHide={hideDeleteEmployeesDialog}>
+                <p>Are you sure you want to delete the selected employees?</p>
             </Dialog>
         </div>
     );
