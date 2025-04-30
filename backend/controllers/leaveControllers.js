@@ -40,7 +40,6 @@ export const requestLeave = async (req, res) => {
   }
 };
 
-
 export const getMyLeaves = async (req, res) => {
   try {
     const leaves = await Leave.find({ requestedBy: req.userId });
@@ -49,7 +48,7 @@ export const getMyLeaves = async (req, res) => {
     console.error(`Get My Leaves Error: ${error.message}`);
     res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const deleteLeaveRequest = async (req, res) => {
   const { id } = req.params;
@@ -231,9 +230,10 @@ export const deleteLeave = async (req, res) => {
 };
 
 export const getEmployeeLeaves = async (req, res) => {
+  const { employeeId } = req.params;
   try {
     const leaves = await Leave.find({
-      requestedBy: req.userId,
+      requestedBy: employeeId,
     });
     res.status(200).json({ success: true, leaves });
   } catch (error) {
