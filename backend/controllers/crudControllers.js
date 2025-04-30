@@ -206,3 +206,135 @@ export const updateEmployee = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+export const getEmployee = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const employee = await Employee.findOne({
+      _id: id,
+      kind: "Employee",
+    }).select("-password");
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Employee not found" });
+    }
+    res.status(200).json({ success: true, employee });
+  } catch (error) {
+    console.error(`Get Employee Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllEmployees = async (req, res) => {
+  try {
+    const employees = await Employee.find({ kind: "Employee" }).select(
+      "-password"
+    );
+    res.status(200).json({ success: true, employees });
+  } catch (error) {
+    console.error(`Get All Employees Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id).select("-password");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error(`Get User Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error(`Get All Users Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getUserById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id).select("-password");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error(`Get User By ID Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getUserName = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id).select("name");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, name: user.name });
+  } catch (error) {
+    console.error(`Get User Name Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getEnseignant = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const enseignant = await User.findById(id)
+      .where("role")
+      .equals("Enseignant")
+      .select("-password");
+    if (!enseignant) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Enseignant not found" });
+    }
+    res.status(200).json({ success: true, enseignant });
+  } catch (error) {
+    console.error(`Get Enseignant Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllEnseignants = async (req, res) => {
+  try {
+    const enseignants = await User.find()
+      .where("role")
+      .equals("Enseignant")
+      .select("-password");
+    res.status(200).json({ success: true, enseignants });
+  } catch (error) {
+    console.error(`Get All Enseignants Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const countUsersByRole = async (req, res) => {
+  const { role } = req.params;
+  try {
+    const count = await User.countDocuments({ role });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error(`Count Users By Role Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

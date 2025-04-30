@@ -1,22 +1,30 @@
 import { Leave } from "../models/Leave.js";
+import { Setting } from "../models/Setting.js";
 import { Employee } from "../models/Employee.js";
 import { Admin } from "../models/Admin.js";
 
 export const requestLeave = async (req, res) => {
-  const { startDate, endDate, reason } = req.body;
+  const { type, period, startDate, endDate, reason } = req.body;
+
   try {
-    if (!startDate || !endDate || !reason) {
+    if (!type || !period || !startDate || !endDate || !reason) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
 
+    const quotaSetting = await Setting.findOne({ key: "leaveQuota" });
+    const defaultQuota = quotaSetting?.value ?? 10;
+
     const leave = new Leave({
       requestedBy: req.userId,
+      type,
+      period,
       startDate,
       endDate,
       reason,
       status: "Pending",
+      quota: defaultQuota,
     });
 
     await leave.save();
@@ -31,6 +39,17 @@ export const requestLeave = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+
+export const getMyLeaves = async (req, res) => {
+  try {
+    const leaves = await Leave.find({ requestedBy: req.userId });
+    res.status(200).json({ success: true, leaves });
+  } catch (error) {
+    console.error(`Get My Leaves Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
 
 export const deleteLeaveRequest = async (req, res) => {
   const { id } = req.params;
@@ -109,9 +128,27 @@ export const approveLeave = async (req, res) => {
 };
 
 export const addLeave = async (req, res) => {
-  const { requestedBy, startDate, endDate, reason, status } = req.body;
+  const {
+    requestedBy,
+    type,
+    period,
+    startDate,
+    endDate,
+    reason,
+    status,
+    quota,
+  } = req.body;
   try {
-    if (!requestedBy || !startDate || !endDate || !reason || !status) {
+    if (
+      !requestedBy ||
+      !type ||
+      !period ||
+      !startDate ||
+      !endDate ||
+      !reason ||
+      !status ||
+      quota === undefined
+    ) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
@@ -119,11 +156,13 @@ export const addLeave = async (req, res) => {
 
     const leave = new Leave({
       requestedBy,
+      type,
+      period,
       startDate,
       endDate,
       reason,
       status,
-      approvedBy: req.userId,
+      quota,
     });
 
     await leave.save();
@@ -141,7 +180,7 @@ export const addLeave = async (req, res) => {
 
 export const updateLeave = async (req, res) => {
   const { id } = req.params;
-  const { startDate, endDate, reason, status } = req.body;
+  const { startDate, endDate, reason, status, quota } = req.body;
   try {
     const leave = await Leave.findById(id);
     if (!leave) {
@@ -154,6 +193,7 @@ export const updateLeave = async (req, res) => {
     if (endDate) leave.endDate = endDate;
     if (reason) leave.reason = reason;
     if (status) leave.status = status;
+    if (quota) leave.quota = quota;
 
     await leave.save();
 
@@ -187,5 +227,45 @@ export const deleteLeave = async (req, res) => {
   } catch (error) {
     console.error(`Delete Leave Error: ${error.message}`);
     res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getEmployeeLeaves = async (req, res) => {
+  try {
+    const leaves = await Leave.find({
+      requestedBy: req.userId,
+    });
+    res.status(200).json({ success: true, leaves });
+  } catch (error) {
+    console.error(`Get Employee Leaves Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllLeaveRequests = async (req, res) => {
+  try {
+    const leaveRequests = await Leave.find({ status: "Pending" })
+      .populate("requestedBy", "name")
+      .select("-approvedBy");
+    res.status(200).json({ success: true, leaveRequests });
+  } catch (error) {
+    console.error(`Get All Leave Requests Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getLeaveById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const leave = await Leave.findById(id).populate("requestedBy", "name");
+    if (!leave) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Leave not found" });
+    }
+    res.status(200).json({ success: true, leave });
+  } catch (error) {
+    console.error(`Get Leave By ID Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
   }
 };

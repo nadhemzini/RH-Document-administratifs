@@ -9,6 +9,18 @@ const leaveSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  reason: {
+    type: String,
+    required: true,
+  },
   status: {
     type: String,
     enum: ["Pending", "Accepted", "Rejected"],
@@ -33,6 +45,11 @@ const leaveSchema = new mongoose.Schema({
   dateVerified: {
     type: Date,
   },
+  quota: {
+    type: Number,
+    required: true,
+  },
+  
 });
 
 const Leave = mongoose.model("Leave", leaveSchema);

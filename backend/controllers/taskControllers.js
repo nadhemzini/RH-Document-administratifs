@@ -131,3 +131,50 @@ export const markTaskAsComplete = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+export const getTasksEmployee = async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.userId });
+    res.status(200).json({ success: true, tasks });
+  } catch (error) {
+    console.error(`Get Tasks Employee Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAssignedTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignedBy: req.userId });
+    res.status(200).json({ success: true, tasks });
+  } catch (error) {
+    console.error(`Get Assigned Tasks Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAssignedTasksById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const tasks = await Task.find({ assignedBy: req.userId, assignedTo: id });
+    res.status(200).json({ success: true, tasks });
+  } catch (error) {
+    console.error(`Get Assigned Tasks By ID Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getTaskById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const task = await Task.findById(id);
+    if (!task) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Task not found" });
+    }
+    res.status(200).json({ success: true, task });
+  } catch (error) {
+    console.error(`Get Task By ID Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
