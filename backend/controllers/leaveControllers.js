@@ -126,15 +126,8 @@ export const approveLeave = async (req, res) => {
 };
 
 export const addLeave = async (req, res) => {
-  const {
-    requestedBy,
-    type,
-    startDate,
-    endDate,
-    reason,
-    status,
-    quota,
-  } = req.body;
+  const { requestedBy, type, startDate, endDate, reason, status, quota } =
+    req.body;
   try {
     if (
       !requestedBy ||
@@ -246,6 +239,20 @@ export const getAllLeaveRequests = async (req, res) => {
     res.status(200).json({ success: true, leaveRequests });
   } catch (error) {
     console.error(`Get All Leave Requests Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllLeaves = async (req, res) => {
+  try {
+    const leaves = await Leave.find()
+      .populate("requestedBy", "name")
+      .populate("approvedBy", "name")
+      .select("-__v");
+
+    res.status(200).json({ success: true, leaves });
+  } catch (error) {
+    console.error(`Get All Leaves Error: ${error.message}`);
     res.status(500).json({ success: false, message: error.message });
   }
 };
