@@ -7,14 +7,23 @@ import { Toast } from 'primereact/toast';
 
 const SystemSettings = () => {
     const toast = useRef<Toast>(null);
-    const [globalQuota, setGlobalQuota] = useState<number>(30); // Default value
+    const [value, setGlobalvalue] = useState<number>(30); // Default value
 
     useEffect(() => {
         const fetchGlobalQuota = async () => {
             try {
-                const res = await fetch('http://localhost:3001/api/global-quota');
+                const res = await fetch('http://localhost:5000/api/leave/getQuota', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                if (!res.ok) throw new Error('Failed to fetch global quota');
+
                 const data = await res.json();
-                setGlobalQuota(data.globalQuota); // Assuming backend returns { globalQuota: 30 }
+                console.log('Fetched global quota:', data.value);
+                setGlobalvalue(data.value);
             } catch (err) {
                 console.error('Failed to fetch global quota:', err);
             }
@@ -25,10 +34,14 @@ const SystemSettings = () => {
 
     const handleSave = async () => {
         try {
-            const res = await fetch('http://localhost:3001/api/global-quota', {
+            const res = await fetch('http://localhost:5000/api/leave/quota', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ globalQuota }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+
+                body: JSON.stringify({ value }),
             });
 
             if (!res.ok) throw new Error('Failed to save');
@@ -58,8 +71,8 @@ const SystemSettings = () => {
                 <label htmlFor="globalQuota">Leave Quota (days)</label>
                 <InputNumber
                     id="globalQuota"
-                    value={globalQuota}
-                    onValueChange={(e) => setGlobalQuota(e.value || 0)}
+                    value={value}
+                    onValueChange={(e) => setGlobalvalue(e.value || 0)}
                     min={0}
                 />
             </div>

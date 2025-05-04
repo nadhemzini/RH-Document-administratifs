@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
-import { Leave } from '@/types/Leave'; // ✅ Import the shared interface
+import { Leave } from '@/types/Leave';
 
 const LeaveTracker = () => {
     const [dataViewValue, setDataViewValue] = useState<Leave[]>([]);
@@ -16,63 +16,45 @@ const LeaveTracker = () => {
     const [sortField, setSortField] = useState<string>('');
     const [solde, setSolde] = useState<number | null>(null);
 
-    const sortOptions = [
-        { label: 'Date Start: Newest First', value: '!dateStart' },
-        { label: 'Date Start: Oldest First', value: 'dateStart' },
-    ];
-
     useEffect(() => {
-        const mockData: Leave[] = [
-            {
-                name: 'Nadhem Zini',
-                email: 'nadhem.zini@gmail.com',
-                dateStart: new Date('2023-04-01'),
-                dateEnd: new Date('2023-04-05'),
-                reason: 'Vacation',
-                type: 'Paid Leave',
-                status: 'APPROVED',
-            },
-            {
-                name: 'Nadhem Zini',
-                email: 'nadhem.zini@gmail.com',
-                dateStart: new Date('2023-04-01'),
-                dateEnd: new Date('2023-04-05'),
-                reason: 'Vacation',
-                type: 'Paid Leave',
-                status: 'APPROVED',
-            },
-            {
-                name: 'Nader Zini',
-                email: 'naderzini@gmail.com',
-                dateStart: new Date('2023-04-10'),
-                dateEnd: new Date('2023-04-15'),
-                reason: 'Medical Leave',
-                type: 'Sick Leave',
-                status: 'PENDING',
-            },
-            {
-                name: 'Lamine Zini',
-                email: 'laminezini@gmail.com',
-                dateStart: new Date('2023-03-20'),
-                dateEnd: new Date('2023-03-25'),
-                reason: 'Family Emergency',
-                type: 'Unpaid Leave',
-                status: 'REJECTED',
-            },
-        ];
-        setDataViewValue(mockData);
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-        const fetchSolde = async () => {
+        if (!user || !user._id) {
+            console.error('User not found in localStorage or missing _id');
+            return;
+        }
+
+        setSolde(user.leaveBalance);
+
+        const fetchLeaves = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/solde');
+                const token = localStorage.getItem('token'); // Retrieve the token from local storage
+                if (!token) {
+                    console.error('Token not found in localStorage');
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:5000/api/leave/employeeLeaves/${user._id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`, // Add Bearer token to the Authorization header
+                    },
+                });
+
                 const data = await response.json();
-                setSolde(data.solde);
+                if (response.ok) {
+                    console.log('Fetched leaves:', data.leaves);
+                    setDataViewValue(data.leaves);
+                } else {
+                    console.error('Failed to fetch leaves:', data.message);
+                }
             } catch (error) {
-                console.error('Error fetching solde:', error);
+                console.error('Error fetching leaves:', error);
             }
         };
 
-        fetchSolde();
+        fetchLeaves();
     }, []);
 
     const onFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,9 +67,7 @@ const LeaveTracker = () => {
         }
 
         const filtered = dataViewValue.filter((leave) =>
-            leave.name.toLowerCase().includes(value) ||
             leave.reason.toLowerCase().includes(value) ||
-            leave.email.toLowerCase().includes(value) ||
             leave.type.toLowerCase().includes(value)
         );
 
@@ -106,6 +86,11 @@ const LeaveTracker = () => {
         setSortKey(value);
     };
 
+    const sortOptions = [
+        { label: 'Date Start: Newest First', value: '.startDate' },
+        { label: 'Date Start: Oldest First', value: '.startDate' },
+    ];
+
     const dataViewHeader = (
         <div className="flex flex-column md:flex-row md:justify-content-between gap-2">
             <Dropdown value={sortKey} options={sortOptions} optionLabel="label" placeholder="Sort by Date" onChange={onSortChange} />
@@ -121,12 +106,10 @@ const LeaveTracker = () => {
         <div className="col-12">
             <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
                 <div className="flex-1 flex flex-column align-items-center text-center md:text-left">
-                    <div className="font-bold text-xl">{leave.name}</div>
-                    <div className="text-sm text-gray-600 mb-1">{leave.email}</div>
                     <div className="mb-1"><strong>Type:</strong> {leave.type}</div>
                     <div className="mb-1"><strong>Reason:</strong> {leave.reason}</div>
                     <div className="mb-1 text-sm">
-                        From: {leave.dateStart ? new Date(leave.dateStart).toLocaleDateString() : 'N/A'} → To: {leave.dateEnd ? new Date(leave.dateEnd).toLocaleDateString() : 'N/A'}
+                        From: {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'} → To: {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}
                     </div>
                     <span className={`p-tag p-tag-${leave.status === 'APPROVED' ? 'success' : leave.status === 'REJECTED' ? 'danger' : 'warning'}`}>
                         {leave.status}
@@ -140,12 +123,11 @@ const LeaveTracker = () => {
         <div className="col-12 md:col-4 lg:col-3">
             <div className="card m-3 border-1 surface-border">
                 <div className="flex flex-column align-items-center text-center mb-3">
-                    <div className="text-xl font-bold">{leave.name}</div>
-                    <div className="text-sm mb-1">{leave.email}</div>
+
                     <div className="mb-1"><strong>Type:</strong> {leave.type}</div>
                     <div className="mb-2"><strong>Reason:</strong> {leave.reason}</div>
                     <div className="text-sm mb-2">
-                        {leave.dateStart ? new Date(leave.dateStart).toLocaleDateString() : 'N/A'} → {leave.dateEnd ? new Date(leave.dateEnd).toLocaleDateString() : 'N/A'}
+                        {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'} → {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}
                     </div>
                     <span className={`p-tag p-tag-${leave.status === 'APPROVED' ? 'success' : leave.status === 'REJECTED' ? 'danger' : 'warning'}`}>
                         {leave.status}
@@ -165,7 +147,7 @@ const LeaveTracker = () => {
             <div className="col-12">
                 <div className="card">
                     <h5>Leave Tracker</h5>
-                    <p>This is your solde: <strong>{solde !== null ? `${solde} days` : 'Loading...'}</strong></p>
+                    <p>This is your solde: <strong>{solde !== null ? `${solde}` : 'Loading...'}</strong></p>
                     <DataView
                         value={filteredValue || dataViewValue}
                         layout={layout}

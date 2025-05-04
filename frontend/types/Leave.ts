@@ -1,11 +1,11 @@
 export interface Leave {
-    id?: string;
+    _id?: string;
     requestedBy: string;
     startDate: Date | null;
     endDate: Date | null;
     reason: string;
     type: string;
-    status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+    status?: 'Pending' | 'Approved' | 'Rejected';
     solde?: number;
     globalQuota?: number;
 }
