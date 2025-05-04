@@ -7,7 +7,7 @@ const leaveSchema = new mongoose.Schema({
   },
   period: {
     type: String,
-    required: true,
+    required: false,
   },
   startDate: {
     type: Date,
@@ -49,7 +49,7 @@ const leaveSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  
+
 });
 
 const Leave = mongoose.model("Leave", leaveSchema);

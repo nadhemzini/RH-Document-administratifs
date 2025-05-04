@@ -6,7 +6,7 @@ const API_URL = '/user'; // base endpoint
 
 // Get all users
 export const getAllUsers = async () => {
-    const res = await axios.get(API_URL);
+    const res = await axios.get(`${API_URL}/getUsers`);
     return res.data;
 };
 
@@ -29,7 +29,7 @@ export const updateUser = async (id: number, user: Partial<User>) => {
 };
 
 // Delete user
-export const deleteUser = async (id: number) => {
-    const res = await axios.delete(`${API_URL}/${id}`);
+export const deleteUser = async (id: string) => {
+    const res = await axios.delete(`${API_URL}/deleteUser/${id}`);
     return res.data;
 };

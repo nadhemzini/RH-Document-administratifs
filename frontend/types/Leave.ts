@@ -1,9 +1,8 @@
 export interface Leave {
     id?: string;
-    name: string;
-    email: string;
-    dateStart: Date | null;
-    dateEnd: Date | null;
+    requestedBy: string;
+    startDate: Date | null;
+    endDate: Date | null;
     reason: string;
     type: string;
     status?: 'PENDING' | 'APPROVED' | 'REJECTED';

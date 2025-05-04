@@ -1,14 +1,14 @@
 export interface Employee {
-    id: number;
-    nom: string;
-    cin: string;
+    _id?: string;
+    name: string;
     email: string;
-    prenom: string;
-    sexe: string;
+    phone: string;
+    gender: string;
     grade: string;
-    departement: string;
-    adresse: string;
-    anciennete: number;
-    handicap: boolean;
-    natureTravail: string;
+    department: string;
+    address: string;
+    disability: boolean;
+    role: string;
+    academicYear: string;
+    dateOfBirth: Date | null;
 }

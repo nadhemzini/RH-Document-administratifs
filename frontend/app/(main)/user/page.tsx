@@ -12,17 +12,15 @@ import { Avatar } from 'primereact/avatar';
 import { getAllUsers, createUser, updateUser, deleteUser } from '../../../service/userService'; // Adjust this path if needed
 import { User } from '@/types/User'; // Adjust this path if needed
 
-
 const emptyUser: User = {
-    id: '',
+    _id: '',
     name: '',
     email: '',
-    role: 'enseignant',
+    role: 'RH',
 };
 
 export default function UserCrud() {
     const [users, setUsers] = useState<User[]>([]);
-    const [onlineUsers, setOnlineUsers] = useState<number[]>([]);
     const [userDialog, setUserDialog] = useState(false);
     const [deleteUserDialog, setDeleteUserDialog] = useState(false);
     const [deleteUsersDialog, setDeleteUsersDialog] = useState(false);
@@ -36,7 +34,6 @@ export default function UserCrud() {
     const roleOptions = [
         { label: 'Admin', value: 'admin' },
         { label: 'RH', value: 'RH' },
-        { label: 'Enseignant', value: 'enseignant' },
     ];
 
     useEffect(() => {
@@ -46,7 +43,8 @@ export default function UserCrud() {
     const fetchUsers = async () => {
         try {
             const data = await getAllUsers();
-            setUsers(data);
+            console.log('Fetched users:', data);
+            setUsers(data.users);
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load users', life: 3000 });
         }
@@ -79,10 +77,11 @@ export default function UserCrud() {
         }
 
         try {
-            if (user.id) {
-                await updateUser(Number(user.id), user);
+            if (user._id) {
+                await updateUser(Number(user._id), user);
                 toast.current?.show({ severity: 'success', summary: 'Success', detail: 'User Updated', life: 3000 });
             } else {
+                console.log('Creating user:', user);
                 await createUser(user);
                 toast.current?.show({ severity: 'success', summary: 'Success', detail: 'User Created', life: 3000 });
             }
@@ -106,7 +105,7 @@ export default function UserCrud() {
 
     const deleteUserById = async () => {
         try {
-            await deleteUser(Number(user.id));
+            await deleteUser(user._id);
             toast.current?.show({ severity: 'success', summary: 'Success', detail: 'User Deleted', life: 3000 });
             fetchUsers();
         } catch {
@@ -120,7 +119,7 @@ export default function UserCrud() {
     const deleteSelectedUsers = async () => {
         try {
             for (const u of selectedUsers || []) {
-                await deleteUser(Number(u.id));
+                await deleteUser(u._id);
             }
             toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Selected Users Deleted', life: 3000 });
             fetchUsers();
@@ -178,7 +177,7 @@ export default function UserCrud() {
 
             <DataTable
                 ref={dt}
-                value={users}
+                value={users.filter(u => u.role === 'admin' || u.role === 'RH')}
                 selection={selectedUsers}
                 onSelectionChange={(e) => setSelectedUsers(e.value)}
                 dataKey="id"
