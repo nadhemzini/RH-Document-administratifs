@@ -20,7 +20,7 @@ export const login = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid credentials" });
     }
-    const token = generateTokenAndSetCookie(res, user._id); // Generate token
+    const token = generateTokenAndSetCookie(res, user._id, user.kind); // Generate token
     user.lastLogin = Date.now();
     user.status = "active";
     await user.save();

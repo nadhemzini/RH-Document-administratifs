@@ -6,7 +6,7 @@ import { sendWelcomeEmail } from "../utils/emailService.js";
 import { generatePassword } from "../utils/passwordGenerator.js";
 
 export const addUser = async (req, res) => {
-  const { _id ,name, email, role, ...additionalDetails } = req.body;
+  const { _id, name, email, role, ...additionalDetails } = req.body;
   try {
     if (!name || !email || !role) {
       return res
@@ -122,7 +122,7 @@ export const deleteUser = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    if (req.userId !== id && user.kind !== "Admin") {
+    if (req.userId == id) {
       return res
         .status(403)
         .json({ success: false, message: "Unauthorized action" });
@@ -173,7 +173,7 @@ export const updateEmployee = async (req, res) => {
     }
 
     // Check if the requester is the employee or an admin
-    if (req.userId !== id && req.kind !== "Admin") {
+    if (req.userId != id && req.kind !== "Admin") {
       return res
         .status(403)
         .json({ success: false, message: "Unauthorized action" });
