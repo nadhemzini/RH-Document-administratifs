@@ -156,6 +156,9 @@ export const updateEmployee = async (req, res) => {
     gradeDate,
     leaveBalance,
     academicYear,
+    name,
+    email,
+    role,
   } = req.body;
 
   try {
@@ -193,13 +196,18 @@ export const updateEmployee = async (req, res) => {
     if (gradeDate) employee.gradeDate = gradeDate;
     if (leaveBalance !== undefined) employee.leaveBalance = leaveBalance;
     if (academicYear) employee.academicYear = academicYear;
+    if (name) employee.name = name;
+    if (email) employee.email = email;
+    if (role && req.kind === "Admin") employee.role = role;
 
     await employee.save();
+
+    const { password, ...employeeWithoutPassword } = employee.toObject();
 
     res.status(200).json({
       success: true,
       message: "Employee updated successfully",
-      employee,
+      employee: employeeWithoutPassword,
     });
   } catch (error) {
     console.error(`Update Employee Error: ${error.message}`);
