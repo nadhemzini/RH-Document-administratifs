@@ -10,7 +10,8 @@ import {
   getEmployeeLeaves,
   getAllLeaveRequests,
   getLeaveById,
-  getMyLeaves
+  getMyLeaves,
+  getAllLeaves
 } from "../controllers/leaveControllers.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { verifyAdmin } from "../middleware/verifyAdmin.js";
@@ -40,6 +41,8 @@ router.put("/updateLeave/:id", updateLeave);
 router.delete("/deleteLeave/:id", deleteLeave);
 
 router.get("/leaveRequests", getAllLeaveRequests);
+router.get("/allLeaves", getAllLeaves);
+
 
 router.post("/quota", async (req, res) => {
   const { value } = req.body;

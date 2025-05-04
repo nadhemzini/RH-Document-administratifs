@@ -244,12 +244,22 @@ export const getEmployeeLeaves = async (req, res) => {
 
 export const getAllLeaveRequests = async (req, res) => {
   try {
-    const leaveRequests = await Leave.find({ status: "Pending" })
-      .populate("requestedBy", "name")
-      .select("-approvedBy");
+    const leaveRequests = await Leave.find({ status: "Pending" }).select(
+      "-approvedBy"
+    );
     res.status(200).json({ success: true, leaveRequests });
   } catch (error) {
     console.error(`Get All Leave Requests Error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllLeaves = async (req, res) => {
+  try {
+    const leaves = await Leave.find().select("-__v");
+    res.status(200).json({ success: true, leaves });
+  } catch (error) {
+    console.error(`Get All Leaves Error: ${error.message}`);
     res.status(500).json({ success: false, message: error.message });
   }
 };
