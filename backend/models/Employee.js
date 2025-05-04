@@ -51,7 +51,7 @@ const employeeSchema = new mongoose.Schema({
   },
   leaveBalance: {
     type: Number,
-    default: 10.0,
+    default: 100.0,
   },
   academicYear: {
     type: String,
