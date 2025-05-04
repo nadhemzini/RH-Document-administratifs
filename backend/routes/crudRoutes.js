@@ -30,7 +30,7 @@ router.get("/getUsers", getAllUsers);
 router.get("/getUserById/:id", getUserById);
 router.get("/getUserName/:id", getUserName);
 router.get("/getEnseignant/:id", getEnseignant);
-router.get("/getEnseignants", getAllEnseignants);
+router.get("/getEnseignants", getAllEnseignants); 
 
 router.get("/countUsersByRole/:role", countUsersByRole);
 
