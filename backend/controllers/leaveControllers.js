@@ -4,10 +4,10 @@ import { Employee } from "../models/Employee.js";
 import { Admin } from "../models/Admin.js";
 
 export const requestLeave = async (req, res) => {
-  const { type, period, startDate, endDate, reason } = req.body;
+  const { type, startDate, endDate, reason } = req.body;
 
   try {
-    if (!type || !period || !startDate || !endDate || !reason) {
+    if (!type || !startDate || !endDate || !reason) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
@@ -19,7 +19,6 @@ export const requestLeave = async (req, res) => {
     const leave = new Leave({
       requestedBy: req.userId,
       type,
-      period,
       startDate,
       endDate,
       reason,
@@ -130,7 +129,6 @@ export const addLeave = async (req, res) => {
   const {
     requestedBy,
     type,
-    period,
     startDate,
     endDate,
     reason,
@@ -141,7 +139,6 @@ export const addLeave = async (req, res) => {
     if (
       !requestedBy ||
       !type ||
-      !period ||
       !startDate ||
       !endDate ||
       !reason ||
@@ -156,7 +153,6 @@ export const addLeave = async (req, res) => {
     const leave = new Leave({
       requestedBy,
       type,
-      period,
       startDate,
       endDate,
       reason,
