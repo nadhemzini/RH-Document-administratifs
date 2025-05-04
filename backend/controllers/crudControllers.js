@@ -6,7 +6,7 @@ import { sendWelcomeEmail } from "../utils/emailService.js";
 import { generatePassword } from "../utils/passwordGenerator.js";
 
 export const addUser = async (req, res) => {
-  const { name, email, role, ...additionalDetails } = req.body;
+  const { _id ,name, email, role, ...additionalDetails } = req.body;
   try {
     if (!name || !email || !role) {
       return res
