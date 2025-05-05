@@ -2,6 +2,7 @@ import { Leave } from "../models/Leave.js";
 import { Setting } from "../models/Setting.js";
 import { Employee } from "../models/Employee.js";
 import { Admin } from "../models/Admin.js";
+import { User } from "../models/User.js";
 
 export const requestLeave = async (req, res) => {
   const { type, startDate, endDate, reason } = req.body;
@@ -12,6 +13,27 @@ export const requestLeave = async (req, res) => {
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
+
+    const employee = await User.findById(req.userId);
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Employee not found" });
+    }
+
+    const leaveDays =
+      Math.ceil(
+        (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)
+      ) + 1;
+
+    if (employee.leaveBalance < leaveDays) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Insufficient leave balance" });
+    }
+
+    employee.leaveBalance -= leaveDays;
+    await employee.save();
 
     const quotaSetting = await Setting.findOne({ key: "leaveQuota" });
     const defaultQuota = quotaSetting?.value ?? 10;
