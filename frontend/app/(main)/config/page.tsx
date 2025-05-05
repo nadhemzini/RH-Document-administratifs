@@ -22,8 +22,8 @@ const SystemSettings = () => {
                 if (!res.ok) throw new Error('Failed to fetch global quota');
 
                 const data = await res.json();
-                console.log('Fetched global quota:', data.value);
-                setGlobalvalue(data.value);
+                console.log('Fetched global quota:', data.quota);
+                setGlobalvalue(data.quota);
             } catch (err) {
                 console.error('Failed to fetch global quota:', err);
             }

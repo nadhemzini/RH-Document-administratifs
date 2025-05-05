@@ -122,6 +122,7 @@ export const deleteUser = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
     //&& user.kind !== "Admin"
+
     if (req.userId == id) {
       return res
         .status(403)
@@ -156,6 +157,9 @@ export const updateEmployee = async (req, res) => {
     gradeDate,
     leaveBalance,
     academicYear,
+    name,
+    email,
+    role,
   } = req.body;
 
   try {
@@ -173,7 +177,7 @@ export const updateEmployee = async (req, res) => {
     }
 
     // Check if the requester is the employee or an admin
-    if (req.userId !== id && req.kind !== "Admin") {
+    if (req.userId != id && req.kind !== "Admin") {
       return res
         .status(403)
         .json({ success: false, message: "Unauthorized action" });
@@ -193,13 +197,18 @@ export const updateEmployee = async (req, res) => {
     if (gradeDate) employee.gradeDate = gradeDate;
     if (leaveBalance !== undefined) employee.leaveBalance = leaveBalance;
     if (academicYear) employee.academicYear = academicYear;
+    if (name) employee.name = name;
+    if (email) employee.email = email;
+    if (role && req.kind === "Admin") employee.role = role;
 
     await employee.save();
+
+    const { password, ...employeeWithoutPassword } = employee.toObject();
 
     res.status(200).json({
       success: true,
       message: "Employee updated successfully",
-      employee,
+      employee: employeeWithoutPassword,
     });
   } catch (error) {
     console.error(`Update Employee Error: ${error.message}`);

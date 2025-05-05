@@ -1,8 +1,8 @@
 export interface Task {
-    id: number;
+    _id: string;
     title: string;
     description: string;
     assignedTo: string;
-    status: 'IN_PROGRESS' | 'COMPLETED';
+    status?: 'IN_PROGRESS' | 'COMPLETED';
     deadline?: Date;
 }

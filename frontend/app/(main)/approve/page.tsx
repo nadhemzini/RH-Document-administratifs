@@ -10,6 +10,7 @@ const AdminLeaveApproval = () => {
     const toast = useRef<Toast>(null);
     const [leaves, setLeaves] = useState<Leave[]>([]);
     const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+    const [processingIds, setProcessingIds] = useState<string[]>([]); // Track currently updating leaves
 
     useEffect(() => {
         const fetchLeaves = async () => {
@@ -47,7 +48,7 @@ const AdminLeaveApproval = () => {
         fetchLeaves();
     }, []);
 
-    const handleStatusChange = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+    const handleStatusChange = async (id: string, status: 'Approved' | 'Rejected') => {
         const token = localStorage.getItem('token');
         if (!token) {
             toast.current?.show({
@@ -59,6 +60,8 @@ const AdminLeaveApproval = () => {
             return;
         }
 
+        setProcessingIds((prev) => [...prev, id]); // disable buttons immediately
+
         try {
             const response = await fetch(`http://localhost:5000/api/leave/approveLeave/${id}`, {
                 method: 'POST',
@@ -68,13 +71,18 @@ const AdminLeaveApproval = () => {
                 },
                 body: JSON.stringify({ status }),
             });
+
             if (!response.ok) {
                 throw new Error('Failed to update status');
             }
 
-            const updatedLeave = await response.json();
+            // update the leave status locally
             setLeaves((prevLeaves) =>
-                prevLeaves.map((leave) => (leave._id === updatedLeave._id ? updatedLeave : leave))
+                prevLeaves.map((leave) =>
+                    leave._id === id
+                        ? { ...leave, status: status === 'Approved' ? 'Approved' : 'Rejected' }
+                        : leave
+                )
             );
 
             toast.current?.show({
@@ -91,6 +99,8 @@ const AdminLeaveApproval = () => {
                 detail: 'Failed to update leave status',
                 life: 3000,
             });
+        } finally {
+            setProcessingIds((prev) => prev.filter((itemId) => itemId !== id));
         }
     };
 
@@ -98,29 +108,45 @@ const AdminLeaveApproval = () => {
         <div className="col-12 md:col-4 lg:col-3">
             <div className="card m-3 border-1 surface-border">
                 <div className="flex flex-column align-items-center text-center mb-3">
-
                     <div><strong>Type:</strong> {leave.type}</div>
                     <div><strong>Reason:</strong> {leave.reason}</div>
                     <div className="text-sm mb-2">
-                        {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'} →
+                        {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'} →{' '}
                         {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}
                     </div>
-                    <span className={`p-tag p-tag-${leave.status === 'Approved' ? 'success' : leave.status === 'Rejected' ? 'danger' : 'warning'}`}>
+                    <span
+                        className={`p-tag p-tag-${leave.status === 'Approved'
+                            ? 'success'
+                            : leave.status === 'Rejected'
+                                ? 'danger'
+                                : 'warning'
+                            }`}
+                    >
                         {leave.status}
                     </span>
                     <div className="mt-2">
                         <Button
                             label="Approve"
                             icon="pi pi-check"
-                            onClick={() => leave._id && handleStatusChange(leave._id, 'APPROVED')}
-                            disabled={leave.status !== 'Pending'}
+                            onClick={() =>
+                                leave._id && handleStatusChange(leave._id, 'Approved')
+                            }
+                            disabled={
+                                leave.status?.toLowerCase() !== 'pending' ||
+                                processingIds.includes(leave._id!)
+                            }
                             className="p-button-success mr-2"
                         />
                         <Button
                             label="Reject"
                             icon="pi pi-times"
-                            onClick={() => leave._id && handleStatusChange(leave._id, 'REJECTED')}
-                            disabled={leave.status !== 'Pending'}
+                            onClick={() =>
+                                leave._id && handleStatusChange(leave._id, 'Rejected')
+                            }
+                            disabled={
+                                leave.status?.toLowerCase() !== 'pending' ||
+                                processingIds.includes(leave._id!)
+                            }
                             className="p-button-danger"
                         />
                     </div>
@@ -131,7 +157,7 @@ const AdminLeaveApproval = () => {
 
     const itemTemplate = (leave: Leave, layout: 'grid' | 'list') => {
         return layout === 'list' ? (
-            <div className="col-12">aa</div> // You can improve list view here
+            <div className="col-12">List view not implemented</div>
         ) : (
             dataviewGridItem(leave)
         );

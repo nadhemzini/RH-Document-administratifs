@@ -149,7 +149,7 @@ export default function EmployeeCrud() {
     return (
         <div className="card">
             <Toast ref={toast} />
-            <h2>Employees</h2>
+            <h2>Employees And Enseignant</h2>
 
             <div className="flex justify-between items-center mb-4 gap-2">
                 <div className="flex gap-2">

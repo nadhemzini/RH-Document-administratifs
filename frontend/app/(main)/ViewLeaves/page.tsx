@@ -111,7 +111,7 @@ const LeaveTracker = () => {
                     <div className="mb-1 text-sm">
                         From: {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'} → To: {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}
                     </div>
-                    <span className={`p-tag p-tag-${leave.status === 'APPROVED' ? 'success' : leave.status === 'REJECTED' ? 'danger' : 'warning'}`}>
+                    <span className={`p-tag p-tag-${leave.status === 'Approved' ? 'success' : leave.status === 'Rejected' ? 'danger' : 'warning'}`}>
                         {leave.status}
                     </span>
                 </div>
@@ -129,7 +129,7 @@ const LeaveTracker = () => {
                     <div className="text-sm mb-2">
                         {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'} → {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}
                     </div>
-                    <span className={`p-tag p-tag-${leave.status === 'APPROVED' ? 'success' : leave.status === 'REJECTED' ? 'danger' : 'warning'}`}>
+                    <span className={`p-tag p-tag-${leave.status === 'Approved' ? 'success' : leave.status === 'Rejected' ? 'danger' : 'warning'}`}>
                         {leave.status}
                     </span>
                 </div>

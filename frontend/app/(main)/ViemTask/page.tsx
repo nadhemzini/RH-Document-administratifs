@@ -1,129 +1,176 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import React, { useState, useEffect } from 'react';
+import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { Dropdown } from 'primereact/dropdown';
-import { Task } from '../../../types/Task';
-// import axios from 'axios'; // Uncomment when using API
+import { Toast } from 'primereact/toast';
+import { Task } from '@/types/Task'; // Adjust path if needed
 
-// Simulate logged-in employee
-const userName = 'Alice';
+const AssignedTaskTracker = () => {
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [filteredTasks, setFilteredTasks] = useState<Task[] | null>(null);
+    const [globalFilter, setGlobalFilter] = useState('');
+    const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+    const [sortKey, setSortKey] = useState<string | null>(null);
+    const [sortOrder, setSortOrder] = useState<1 | -1 | null>(null);
+    const [sortField, setSortField] = useState<string>('');
 
-const statusOptions = [
-    { label: 'In Progress', value: 'IN_PROGRESS' },
-    { label: 'Completed', value: 'COMPLETED' },
-];
-
-const EmployeeTaskManager = () => {
-    const [tasks, setTasks] = useState<Task[]>([
-        {
-            id: 1,
-            title: 'Update Resume',
-            description: 'Add latest projects and experiences.',
-            assignedTo: 'Alice',
-            status: 'IN_PROGRESS',
-            deadline: new Date('2025-04-25'),
-        },
-        {
-            id: 2,
-            title: 'Client Meeting',
-            description: 'Present quarterly performance report.',
-            assignedTo: 'Alice',
-            status: 'COMPLETED',
-            deadline: new Date('2025-04-10'),
-        }
-    ]);
-
-    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-    const [dialogVisible, setDialogVisible] = useState(false);
-    const [filterStatus, setFilterStatus] = useState<string | null>(null);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const token = localStorage.getItem('token');
 
     const fetchTasks = async () => {
-        // const res = await axios.get('/api/tasks');
-        // const myTasks = res.data.filter((t: Task) => t.assignedTo === userName);
-        // setTasks(myTasks);
+        if (!user._id || !token) {
+            console.error('User ID or token not found in localStorage');
+            return;
+        }
+
+        try {
+            const res = await fetch(`http://localhost:5000/api/task/assignedTasksById/${user._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            setTasks(data.tasks || []);
+        } catch (err) {
+            console.error('Error fetching tasks:', err);
+        }
+    };
+
+    const markAsComplete = async (taskId: string) => {
+        try {
+            const res = await fetch(`http://localhost:5000/api/task/markTaskAsComplete/${taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const result = await res.json();
+
+            if (res.ok) {
+                await fetchTasks(); // Refresh task list
+            } else {
+                console.error(result.message || 'Failed to complete task');
+            }
+        } catch (err) {
+            console.error('Error marking task as complete:', err);
+        }
     };
 
     useEffect(() => {
         fetchTasks();
     }, []);
 
-    const handleMarkComplete = async (taskId: number) => {
-        // await axios.put(`/api/tasks/${taskId}`, { status: 'COMPLETED' });
+    const onFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.toLowerCase();
+        setGlobalFilter(value);
 
-        // Update local state for demo/testing
-        const updated = tasks.map((task): Task =>
-            task.id === taskId ? { ...task, status: 'COMPLETED' as 'COMPLETED' } : task
+        if (!value) {
+            setFilteredTasks(null);
+            return;
+        }
+
+        const filtered = tasks.filter(
+            (task) =>
+                task.title.toLowerCase().includes(value) ||
+                task.description.toLowerCase().includes(value)
         );
-        setTasks(updated);
-        setDialogVisible(false);
+        setFilteredTasks(filtered);
     };
 
-    const statusBodyTemplate = (task: Task) => (
-        <span className={`p-tag p-tag-${task.status === 'COMPLETED' ? 'success' : 'warning'}`}>
-            {task.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+    const onSortChange = (event: DropdownChangeEvent) => {
+        const value = event.value;
+        if (value.startsWith('!')) {
+            setSortOrder(-1);
+            setSortField(value.substring(1));
+        } else {
+            setSortOrder(1);
+            setSortField(value);
+        }
+        setSortKey(value);
+    };
+
+    const sortOptions = [
+        { label: 'Deadline: Newest First', value: '!deadline' },
+        { label: 'Deadline: Oldest First', value: 'deadline' },
+    ];
+
+    const dataViewHeader = (
+        <div className="flex flex-column md:flex-row md:justify-content-between gap-2">
+            <Dropdown value={sortKey} options={sortOptions} onChange={onSortChange} placeholder="Sort by" />
+            <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText value={globalFilter} onChange={onFilter} placeholder="Search tasks..." />
+            </span>
+            <DataViewLayoutOptions layout={layout} onChange={(e) => setLayout(e.value as 'grid' | 'list')} />
+        </div>
+    );
+
+    const renderStatus = (status: string) => (
+        <span className={`p-tag p-tag-${status === 'COMPLETED' ? 'success' : 'warning'}`}>
+            {status === 'COMPLETED' ? 'Completed' : 'In Progress'}
         </span>
     );
 
-    const deadlineBodyTemplate = (task: Task) => (
-        <span>{task.deadline ? new Date(task.deadline).toLocaleDateString() : '—'}</span>
+    const renderDates = (task: Task) => (
+        <div className="text-sm mb-2">
+            {task.deadline ? `Deadline: ${new Date(task.deadline).toLocaleDateString()}` : 'No deadline'}
+        </div>
     );
 
-    const actionBodyTemplate = (task: Task) => (
-        <Button label="Details" icon="pi pi-eye" onClick={() => {
-            setSelectedTask(task);
-            setDialogVisible(true);
-        }} />
+    const listItem = (task: Task) => (
+        <div className="col-12">
+            <div className="flex flex-column md:flex-row align-items-center p-3 w-full border-1 surface-border">
+                <div className="flex-1">
+                    <div className="mb-1"><strong>Title:</strong> {task.title}</div>
+                    <div className="mb-1"><strong>Description:</strong> {task.description}</div>
+                    {renderDates(task)}
+                    {renderStatus(task.status!)}
+                </div>
+                {task.status !== 'COMPLETED' && (
+                    <Button label="Mark Complete" icon="pi pi-check" className="p-button-success ml-3" onClick={() => markAsComplete(task._id)} />
+                )}
+            </div>
+        </div>
     );
 
-    const filteredTasks = filterStatus
-        ? tasks.filter((t) => t.status === filterStatus)
-        : tasks;
+    const gridItem = (task: Task) => (
+        <div className="col-12 md:col-4 lg:col-3">
+            <div className="card m-2 text-center">
+                <div className="mb-2"><strong>{task.title}</strong></div>
+                <div className="mb-2">{task.description}</div>
+                {renderDates(task)}
+                {renderStatus(task.status!)}
+                {task.status !== 'COMPLETED' && (
+                    <Button label="Complete" icon="pi pi-check" className="p-button-sm p-button-success mt-2" onClick={() => markAsComplete(task._id)} />
+                )}
+            </div>
+        </div>
+    );
+
+    const itemTemplate = (task: Task, layoutType: 'grid' | 'list') =>
+        layoutType === 'list' ? listItem(task) : gridItem(task);
 
     return (
-        <div className="card">
-            <h4>My Tasks</h4>
-
-            <div className="mb-3">
-                <Dropdown
-                    value={filterStatus}
-                    options={statusOptions}
-                    onChange={(e) => setFilterStatus(e.value)}
-                    placeholder="Filter by Status"
-                    className="w-full md:w-25rem"
-                />
+        <div className="grid">
+            <div className="col-12">
+                <div className="card">
+                    <h5>My Assigned Tasks</h5>
+                    <DataView
+                        value={filteredTasks || tasks}
+                        layout={layout}
+                        paginator
+                        rows={9}
+                        sortOrder={sortOrder}
+                        sortField={sortField}
+                        itemTemplate={itemTemplate}
+                        header={dataViewHeader}
+                    />
+                </div>
             </div>
-
-            <DataTable value={filteredTasks} responsiveLayout="scroll">
-                <Column field="title" header="Title" />
-                <Column field="status" header="Status" body={statusBodyTemplate} />
-                <Column field="deadline" header="Deadline" body={deadlineBodyTemplate} />
-                <Column header="Actions" body={actionBodyTemplate} />
-            </DataTable>
-
-            <Dialog header="Task Details" visible={dialogVisible} onHide={() => setDialogVisible(false)} modal>
-                {selectedTask && (
-                    <>
-                        <h5>{selectedTask.title}</h5>
-                        <p><strong>Description:</strong> {selectedTask.description}</p>
-                        <p><strong>Assigned to:</strong> {selectedTask.assignedTo}</p>
-                        <p><strong>Status:</strong> {selectedTask.status}</p>
-                        <p><strong>Deadline:</strong> {selectedTask.deadline ? new Date(selectedTask.deadline).toLocaleDateString() : '—'}</p>
-                        <Button
-                            label="Mark as Completed"
-                            icon="pi pi-check"
-                            className="mt-3"
-                            disabled={selectedTask.status === 'COMPLETED'}
-                            onClick={() => handleMarkComplete(selectedTask.id)}
-                        />
-                    </>
-                )}
-            </Dialog>
         </div>
     );
 };
 
-export default EmployeeTaskManager;
+export default AssignedTaskTracker;
