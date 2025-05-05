@@ -7,6 +7,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Leave } from '@/types/Leave'; // Adjust path if needed
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const Leaves = () => {
     const toast = useRef<Toast>(null);
@@ -116,56 +117,58 @@ const Leaves = () => {
     };
 
     return (
-        <div className="grid">
-            <Toast ref={toast} />
-            <div className="col-12">
-                <div className="card p-fluid">
-                    <h5>Request Leave</h5>
-                    <div className="formgrid grid">
-                        <div className="field col">
-                            <label htmlFor="type">Leave Type</label>
-                            <Dropdown
-                                id="type"
-                                value={leave.type}
-                                options={leaveTypeOptions}
-                                onChange={(e) => handleChange('type', e.value)}
-                                placeholder="Select a type"
+        <ProtectedPage>
+            <div className="grid">
+                <Toast ref={toast} />
+                <div className="col-12">
+                    <div className="card p-fluid">
+                        <h5>Request Leave</h5>
+                        <div className="formgrid grid">
+                            <div className="field col">
+                                <label htmlFor="type">Leave Type</label>
+                                <Dropdown
+                                    id="type"
+                                    value={leave.type}
+                                    options={leaveTypeOptions}
+                                    onChange={(e) => handleChange('type', e.value)}
+                                    placeholder="Select a type"
+                                />
+                            </div>
+                            <div className="field col">
+                                <label htmlFor="startDate">Start Date</label>
+                                <Calendar
+                                    value={leave.startDate}
+                                    onChange={(e) => handleChange('startDate', e.value ?? null)}
+                                    showIcon
+                                    showButtonBar
+                                />
+                            </div>
+                            <div className="field col">
+                                <label htmlFor="endDate">End Date</label>
+                                <Calendar
+                                    value={leave.endDate}
+                                    onChange={(e) => handleChange('endDate', e.value ?? null)}
+                                    showIcon
+                                    showButtonBar
+                                />
+                            </div>
+                        </div>
+                        <div className="field">
+                            <label htmlFor="reason">Reason</label>
+                            <InputTextarea
+                                id="reason"
+                                value={leave.reason}
+                                onChange={(e) => handleChange('reason', e.target.value)}
+                                rows={5}
+                                cols={30}
+                                placeholder="Enter the reason for leave"
                             />
                         </div>
-                        <div className="field col">
-                            <label htmlFor="startDate">Start Date</label>
-                            <Calendar
-                                value={leave.startDate}
-                                onChange={(e) => handleChange('startDate', e.value ?? null)}
-                                showIcon
-                                showButtonBar
-                            />
-                        </div>
-                        <div className="field col">
-                            <label htmlFor="endDate">End Date</label>
-                            <Calendar
-                                value={leave.endDate}
-                                onChange={(e) => handleChange('endDate', e.value ?? null)}
-                                showIcon
-                                showButtonBar
-                            />
-                        </div>
+                        <Button label="Submit" onClick={handleSubmit} className="mt-3" />
                     </div>
-                    <div className="field">
-                        <label htmlFor="reason">Reason</label>
-                        <InputTextarea
-                            id="reason"
-                            value={leave.reason}
-                            onChange={(e) => handleChange('reason', e.target.value)}
-                            rows={5}
-                            cols={30}
-                            placeholder="Enter the reason for leave"
-                        />
-                    </div>
-                    <Button label="Submit" onClick={handleSubmit} className="mt-3" />
                 </div>
             </div>
-        </div>
+        </ProtectedPage>
     );
 };
 

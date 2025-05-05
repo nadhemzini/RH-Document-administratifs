@@ -13,6 +13,7 @@ import { Checkbox } from 'primereact/checkbox';
 import { getAllEmployees, createEmployee, updateEmployee, deleteEmployee } from '../../../service/employeeService';
 
 import { Employee } from '@/types/Employee';
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const emptyEmployee: Employee = {
     _id: '',
@@ -147,118 +148,120 @@ export default function EmployeeCrud() {
     };
 
     return (
-        <div className="card">
-            <Toast ref={toast} />
-            <h2>Employees And Enseignant</h2>
+        <ProtectedPage>
+            <div className="card">
+                <Toast ref={toast} />
+                <h2>Employees And Enseignant</h2>
 
-            <div className="flex justify-between items-center mb-4 gap-2">
-                <div className="flex gap-2">
-                    <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
+                <div className="flex justify-between items-center mb-4 gap-2">
+                    <div className="flex gap-2">
+                        <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
+                    </div>
+                    <Button label="Export CSV" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />
                 </div>
-                <Button label="Export CSV" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />
-            </div>
 
-            <DataTable
-                ref={dt}
-                value={employees}
-                selection={selectedEmployees}
-                onSelectionChange={(e) => setSelectedEmployees(e.value)}
-                dataKey="_id"
-                paginator
-                rows={10}
-                rowsPerPageOptions={[5, 10, 25]}
-                selectionMode="multiple"
-                header="Manage Employees"
-            >
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                <Column field="name" header="Name" sortable />
-                <Column field="email" header="Email" sortable />
-                <Column field="phone" header="Phone" />
-                <Column field="gender" header="Gender" />
-                <Column field="grade" header="Grade" />
-                <Column field="address" header="Address" />
-                <Column field="department" header="Department" />
-                <Column field="disability" header="Disability" body={(row) => row.disability ? 'Yes' : 'No'} />
-                <Column field="role" header="Role" />
-                <Column field="academicYear" header="Academic Year" />
-                <Column field="dateOfBirth" header="Birth Date" body={(row) => row.dateOfBirth ? new Date(row.dateOfBirth).toLocaleDateString() : ''} />
-                <Column
-                    body={(rowData) => (
+                <DataTable
+                    ref={dt}
+                    value={employees}
+                    selection={selectedEmployees}
+                    onSelectionChange={(e) => setSelectedEmployees(e.value)}
+                    dataKey="_id"
+                    paginator
+                    rows={10}
+                    rowsPerPageOptions={[5, 10, 25]}
+                    selectionMode="multiple"
+                    header="Manage Employees"
+                >
+                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                    <Column field="name" header="Name" sortable />
+                    <Column field="email" header="Email" sortable />
+                    <Column field="phone" header="Phone" />
+                    <Column field="gender" header="Gender" />
+                    <Column field="grade" header="Grade" />
+                    <Column field="address" header="Address" />
+                    <Column field="department" header="Department" />
+                    <Column field="disability" header="Disability" body={(row) => row.disability ? 'Yes' : 'No'} />
+                    <Column field="role" header="Role" />
+                    <Column field="academicYear" header="Academic Year" />
+                    <Column field="dateOfBirth" header="Birth Date" body={(row) => row.dateOfBirth ? new Date(row.dateOfBirth).toLocaleDateString() : ''} />
+                    <Column
+                        body={(rowData) => (
+                            <>
+                                <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editEmployee(rowData)} />
+                                <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteEmployee(rowData)} />
+                            </>
+                        )}
+                    />
+                </DataTable>
+
+                <Dialog visible={employeeDialog} style={{ width: '500px' }} header="Employee Details" modal className="p-fluid" onHide={hideDialog}>
+                    <div className="field">
+                        <label htmlFor="name">Name</label>
+                        <InputText id="name" value={employee.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="email">Email</label>
+                        <InputText id="email" value={employee.email} onChange={(e) => onInputChange(e, 'email')} required />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="phone">Phone</label>
+                        <InputText id="phone" value={employee.phone} onChange={(e) => onInputChange(e, 'phone')} />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="address">Address</label>
+                        <InputText id="address" value={employee.address} onChange={(e) => onInputChange(e, 'address')} />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="gender">Gender</label>
+                        <Dropdown id="gender" value={employee.gender} options={genders} onChange={(e) => onInputChange(e, 'gender')} placeholder="Select Gender" />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="grade">Grade</label>
+                        <InputText id="grade" value={employee.grade} onChange={(e) => onInputChange(e, 'grade')} />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="department">Department</label>
+                        <Dropdown id="department" value={employee.department} options={departments} onChange={(e) => onInputChange(e, 'department')} placeholder="Select Department" />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="disability">Disability</label>
+                        <Checkbox inputId="disability" checked={employee.disability} onChange={(e) => setEmployee({ ...employee, disability: e.checked ?? false })} />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="role">Role</label>
+                        <Dropdown id="role" value={employee.role} options={roles} onChange={(e) => onInputChange(e, 'role')} placeholder="Select Role" />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="academicYear">Academic Year</label>
+                        <InputText id="academicYear" value={employee.academicYear} onChange={(e) => onInputChange(e, 'academicYear')} />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="dateOfBirth">Date of Birth</label>
+                        <Calendar id="dateOfBirth" value={employee.dateOfBirth ? new Date(employee.dateOfBirth) : null} onChange={(e) => onInputChange(e, 'dateOfBirth')} showIcon dateFormat="yy-mm-dd" />
+                    </div>
+
+                    <div className="flex justify-content-end mt-4">
+                        <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} className="mr-2" />
+                        <Button label="Save" icon="pi pi-check" onClick={saveEmployee} />
+                    </div>
+                </Dialog>
+
+                <Dialog
+                    visible={deleteEmployeeDialog}
+                    style={{ width: '450px' }}
+                    header="Confirm"
+                    modal
+                    footer={
                         <>
-                            <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editEmployee(rowData)} />
-                            <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteEmployee(rowData)} />
+                            <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteDialog} />
+                            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedEmployee} />
                         </>
-                    )}
-                />
-            </DataTable>
-
-            <Dialog visible={employeeDialog} style={{ width: '500px' }} header="Employee Details" modal className="p-fluid" onHide={hideDialog}>
-                <div className="field">
-                    <label htmlFor="name">Name</label>
-                    <InputText id="name" value={employee.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus />
-                </div>
-                <div className="field">
-                    <label htmlFor="email">Email</label>
-                    <InputText id="email" value={employee.email} onChange={(e) => onInputChange(e, 'email')} required />
-                </div>
-                <div className="field">
-                    <label htmlFor="phone">Phone</label>
-                    <InputText id="phone" value={employee.phone} onChange={(e) => onInputChange(e, 'phone')} />
-                </div>
-                <div className="field">
-                    <label htmlFor="address">Address</label>
-                    <InputText id="address" value={employee.address} onChange={(e) => onInputChange(e, 'address')} />
-                </div>
-                <div className="field">
-                    <label htmlFor="gender">Gender</label>
-                    <Dropdown id="gender" value={employee.gender} options={genders} onChange={(e) => onInputChange(e, 'gender')} placeholder="Select Gender" />
-                </div>
-                <div className="field">
-                    <label htmlFor="grade">Grade</label>
-                    <InputText id="grade" value={employee.grade} onChange={(e) => onInputChange(e, 'grade')} />
-                </div>
-                <div className="field">
-                    <label htmlFor="department">Department</label>
-                    <Dropdown id="department" value={employee.department} options={departments} onChange={(e) => onInputChange(e, 'department')} placeholder="Select Department" />
-                </div>
-                <div className="field">
-                    <label htmlFor="disability">Disability</label>
-                    <Checkbox inputId="disability" checked={employee.disability} onChange={(e) => setEmployee({ ...employee, disability: e.checked ?? false })} />
-                </div>
-                <div className="field">
-                    <label htmlFor="role">Role</label>
-                    <Dropdown id="role" value={employee.role} options={roles} onChange={(e) => onInputChange(e, 'role')} placeholder="Select Role" />
-                </div>
-                <div className="field">
-                    <label htmlFor="academicYear">Academic Year</label>
-                    <InputText id="academicYear" value={employee.academicYear} onChange={(e) => onInputChange(e, 'academicYear')} />
-                </div>
-                <div className="field">
-                    <label htmlFor="dateOfBirth">Date of Birth</label>
-                    <Calendar id="dateOfBirth" value={employee.dateOfBirth ? new Date(employee.dateOfBirth) : null} onChange={(e) => onInputChange(e, 'dateOfBirth')} showIcon dateFormat="yy-mm-dd" />
-                </div>
-
-                <div className="flex justify-content-end mt-4">
-                    <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} className="mr-2" />
-                    <Button label="Save" icon="pi pi-check" onClick={saveEmployee} />
-                </div>
-            </Dialog>
-
-            <Dialog
-                visible={deleteEmployeeDialog}
-                style={{ width: '450px' }}
-                header="Confirm"
-                modal
-                footer={
-                    <>
-                        <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteDialog} />
-                        <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedEmployee} />
-                    </>
-                }
-                onHide={hideDeleteDialog}
-            >
-                <div className="confirmation-content">Are you sure you want to delete <b>{employee.name}</b>?</div>
-            </Dialog>
-        </div>
+                    }
+                    onHide={hideDeleteDialog}
+                >
+                    <div className="confirmation-content">Are you sure you want to delete <b>{employee.name}</b>?</div>
+                </Dialog>
+            </div>
+        </ProtectedPage>
     );
 }

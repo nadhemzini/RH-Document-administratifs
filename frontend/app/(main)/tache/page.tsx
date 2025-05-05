@@ -11,6 +11,7 @@ import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
 import { Task } from '@/types/Task'; // Adjust the path if needed
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const AdminTaskManager = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -113,8 +114,8 @@ const AdminTaskManager = () => {
     }, []);
 
     const statusBodyTemplate = (task: Task) => (
-        <span className={`p-tag p-tag-${task.status === 'COMPLETED' ? 'success' : 'warning'}`}>
-            {task.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+        <span className={`p-tag p-tag-${task.status === 'Completed' ? 'success' : 'warning'}`}>
+            {task.status === 'Completed' ? 'Completed' : 'In Progress'}
         </span>
     );
 
@@ -149,89 +150,91 @@ const AdminTaskManager = () => {
     const filteredTasks = filterStatus ? tasks.filter((t) => t.status === filterStatus) : tasks;
 
     return (
-        <div className="card">
-            <Toast ref={toast} />
-            <h4>Admin Task Manager</h4>
+        <ProtectedPage>
+            <div className="card">
+                <Toast ref={toast} />
+                <h4>Admin Task Manager</h4>
 
-            <div className="grid mb-4">
-                <div className="col-12 md:col-3">
-                    <Dropdown
-                        value={filterStatus}
-                        options={[
-                            { label: 'In Progress', value: 'IN_PROGRESS' },
-                            { label: 'Completed', value: 'COMPLETED' },
-                        ]}
-                        onChange={(e) => setFilterStatus(e.value)}
-                        placeholder="Filter by Status"
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-2">
-                    <InputText
-                        placeholder="Title"
-                        value={newTask.title}
-                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <InputText
-                        placeholder="Description"
-                        value={newTask.description}
-                        onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-2">
-                    <Dropdown
-                        value={newTask.assignedTo}
-                        options={employees}
-                        onChange={(e) => setNewTask({ ...newTask, assignedTo: e.value })}
-                        placeholder="Assign to"
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <Calendar
-                        value={newTask.deadline}
-                        onChange={(e) => setNewTask({ ...newTask, deadline: e.value as Date })}
-                        showIcon
-                        placeholder="Deadline"
-                        dateFormat="yy-mm-dd"
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-2">
-                    <Button label="Add Task" icon="pi pi-plus" onClick={handleCreateTask} />
-                </div>
-            </div>
-
-            <DataTable value={filteredTasks} responsiveLayout="scroll">
-                <Column field="title" header="Title" />
-                <Column header="Assigned To" body={assignedToBodyTemplate} />
-                <Column field="status" header="Status" body={statusBodyTemplate} />
-                <Column field="deadline" header="Deadline" body={deadlineBodyTemplate} />
-                <Column field="description" header="Description" />
-                <Column header="Actions" body={actionBodyTemplate} />
-            </DataTable>
-
-            <Dialog header="Task Details" visible={dialogVisible} onHide={() => setDialogVisible(false)} modal>
-                {selectedTask && (
-                    <div>
-                        <h5>{selectedTask.title}</h5>
-                        <p><strong>Assigned to:</strong> {employeeMap[selectedTask.assignedTo] || selectedTask.assignedTo}</p>
-                        <p><strong>Status:</strong> {selectedTask.status}</p>
-                        <p><strong>Description:</strong> {selectedTask.description}</p>
-                        <p><strong>Deadline:</strong> {selectedTask.deadline ? new Date(selectedTask.deadline).toLocaleDateString() : '—'}</p>
+                <div className="grid mb-4">
+                    <div className="col-12 md:col-3">
+                        <Dropdown
+                            value={filterStatus}
+                            options={[
+                                { label: 'In Progress', value: 'IN_PROGRESS' },
+                                { label: 'Completed', value: 'Completed' },
+                            ]}
+                            onChange={(e) => setFilterStatus(e.value)}
+                            placeholder="Filter by Status"
+                            className="w-full"
+                        />
                     </div>
-                )}
-            </Dialog>
-        </div>
+
+                    <div className="col-12 md:col-2">
+                        <InputText
+                            placeholder="Title"
+                            value={newTask.title}
+                            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="col-12 md:col-3">
+                        <InputText
+                            placeholder="Description"
+                            value={newTask.description}
+                            onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="col-12 md:col-2">
+                        <Dropdown
+                            value={newTask.assignedTo}
+                            options={employees}
+                            onChange={(e) => setNewTask({ ...newTask, assignedTo: e.value })}
+                            placeholder="Assign to"
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="col-12 md:col-3">
+                        <Calendar
+                            value={newTask.deadline}
+                            onChange={(e) => setNewTask({ ...newTask, deadline: e.value as Date })}
+                            showIcon
+                            placeholder="Deadline"
+                            dateFormat="yy-mm-dd"
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="col-12 md:col-2">
+                        <Button label="Add Task" icon="pi pi-plus" onClick={handleCreateTask} />
+                    </div>
+                </div>
+
+                <DataTable value={filteredTasks} responsiveLayout="scroll">
+                    <Column field="title" header="Title" />
+                    <Column header="Assigned To" body={assignedToBodyTemplate} />
+                    <Column field="status" header="Status" body={statusBodyTemplate} />
+                    <Column field="deadline" header="Deadline" body={deadlineBodyTemplate} />
+                    <Column field="description" header="Description" />
+                    <Column header="Actions" body={actionBodyTemplate} />
+                </DataTable>
+
+                <Dialog header="Task Details" visible={dialogVisible} onHide={() => setDialogVisible(false)} modal>
+                    {selectedTask && (
+                        <div>
+                            <h5>{selectedTask.title}</h5>
+                            <p><strong>Assigned to:</strong> {employeeMap[selectedTask.assignedTo] || selectedTask.assignedTo}</p>
+                            <p><strong>Status:</strong> {selectedTask.status}</p>
+                            <p><strong>Description:</strong> {selectedTask.description}</p>
+                            <p><strong>Deadline:</strong> {selectedTask.deadline ? new Date(selectedTask.deadline).toLocaleDateString() : '—'}</p>
+                        </div>
+                    )}
+                </Dialog>
+            </div>
+        </ProtectedPage>
     );
 };
 

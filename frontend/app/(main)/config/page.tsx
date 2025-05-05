@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { InputNumber } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const SystemSettings = () => {
     const toast = useRef<Toast>(null);
@@ -64,20 +65,23 @@ const SystemSettings = () => {
     };
 
     return (
-        <div className="card">
-            <Toast ref={toast} />
-            <h4>Global Leave Quota</h4>
-            <div className="field">
-                <label htmlFor="globalQuota">Leave Quota (days)</label>
-                <InputNumber
-                    id="globalQuota"
-                    value={value}
-                    onValueChange={(e) => setGlobalvalue(e.value || 0)}
-                    min={0}
-                />
+        <ProtectedPage>
+
+            <div className="card">
+                <Toast ref={toast} />
+                <h4>Global Leave Quota</h4>
+                <div className="field">
+                    <label htmlFor="globalQuota">Leave Quota (days)</label>
+                    <InputNumber
+                        id="globalQuota"
+                        value={value}
+                        onValueChange={(e) => setGlobalvalue(e.value || 0)}
+                        min={0}
+                    />
+                </div>
+                <Button label="Save Quota" icon="pi pi-save" className="mt-3" onClick={handleSave} />
             </div>
-            <Button label="Save Quota" icon="pi pi-save" className="mt-3" onClick={handleSave} />
-        </div>
+        </ProtectedPage>
     );
 };
 

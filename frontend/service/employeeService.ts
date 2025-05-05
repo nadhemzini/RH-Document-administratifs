@@ -33,7 +33,7 @@ export const createEmployee = async (employee: Employee) => {
 
 // Update an employee
 export const updateEmployee = async (id: string, employee: Partial<Employee>) => {
-    const res = await axios.put(`${API_URL}/updateEmployee/${id}`, employee);
+    const res = await axios.post(`${API_URL}/updateEmployee/${id}`, employee);
     return res.data;
 };
 

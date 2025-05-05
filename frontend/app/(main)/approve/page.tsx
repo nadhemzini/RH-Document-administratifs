@@ -5,6 +5,7 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { DataView } from 'primereact/dataview';
 import { Leave } from '@/types/Leave';
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const AdminLeaveApproval = () => {
     const toast = useRef<Toast>(null);
@@ -164,21 +165,25 @@ const AdminLeaveApproval = () => {
     };
 
     return (
-        <div className="grid">
-            <div className="col-12">
-                <div className="card">
-                    <h5>Leave Approval</h5>
-                    <Toast ref={toast} />
-                    <DataView
-                        value={leaves}
-                        layout={layout}
-                        paginator
-                        rows={9}
-                        itemTemplate={itemTemplate}
-                    />
+        <ProtectedPage>
+
+
+            <div className="grid">
+                <div className="col-12">
+                    <div className="card">
+                        <h5>Leave Approval</h5>
+                        <Toast ref={toast} />
+                        <DataView
+                            value={leaves}
+                            layout={layout}
+                            paginator
+                            rows={9}
+                            itemTemplate={itemTemplate}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </ProtectedPage>
     );
 };
 

@@ -5,6 +5,7 @@ import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Leave } from '@/types/Leave';
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const LeaveTracker = () => {
     const [dataViewValue, setDataViewValue] = useState<Leave[]>([]);
@@ -143,24 +144,26 @@ const LeaveTracker = () => {
     };
 
     return (
-        <div className="grid">
-            <div className="col-12">
-                <div className="card">
-                    <h5>Leave Tracker</h5>
-                    <p>This is your solde: <strong>{solde !== null ? `${solde}` : 'Loading...'}</strong></p>
-                    <DataView
-                        value={filteredValue || dataViewValue}
-                        layout={layout}
-                        paginator
-                        rows={9}
-                        sortOrder={sortOrder}
-                        sortField={sortField}
-                        itemTemplate={itemTemplate}
-                        header={dataViewHeader}
-                    />
+        <ProtectedPage>
+            <div className="grid">
+                <div className="col-12">
+                    <div className="card">
+                        <h5>Leave Tracker</h5>
+                        <p>This is your solde: <strong>{solde !== null ? `${solde}` : 'Loading...'}</strong></p>
+                        <DataView
+                            value={filteredValue || dataViewValue}
+                            layout={layout}
+                            paginator
+                            rows={9}
+                            sortOrder={sortOrder}
+                            sortField={sortField}
+                            itemTemplate={itemTemplate}
+                            header={dataViewHeader}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </ProtectedPage>
     );
 };
 

@@ -3,6 +3,6 @@ export interface Task {
     title: string;
     description: string;
     assignedTo: string;
-    status?: 'IN_PROGRESS' | 'COMPLETED';
+    status: 'Pending' | 'Completed'; // Explicitly define possible values
     deadline?: Date;
 }

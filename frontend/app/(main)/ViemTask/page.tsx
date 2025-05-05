@@ -5,8 +5,8 @@ import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
-import { Task } from '@/types/Task'; // Adjust path if needed
+import { Task } from '@/types/Task';
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const AssignedTaskTracker = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -27,7 +27,7 @@ const AssignedTaskTracker = () => {
         }
 
         try {
-            const res = await fetch(`http://localhost:5000/api/task/assignedTasksById/${user._id}`, {
+            const res = await fetch(`http://localhost:5000/api/task/getTasks`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
@@ -49,7 +49,19 @@ const AssignedTaskTracker = () => {
             const result = await res.json();
 
             if (res.ok) {
-                await fetchTasks(); // Refresh task list
+                // ✅ update task locally instead of refetching
+                setTasks(prevTasks =>
+                    prevTasks.map(task =>
+                        task._id === taskId ? { ...task, status: 'Completed' } : task
+                    )
+                );
+
+                // Also update filtered tasks if they exist
+                setFilteredTasks(prev =>
+                    prev?.map(task =>
+                        task._id === taskId ? { ...task, status: 'Completed' } : task
+                    ) || null
+                );
             } else {
                 console.error(result.message || 'Failed to complete task');
             }
@@ -108,8 +120,8 @@ const AssignedTaskTracker = () => {
     );
 
     const renderStatus = (status: string) => (
-        <span className={`p-tag p-tag-${status === 'COMPLETED' ? 'success' : 'warning'}`}>
-            {status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+        <span className={`p-tag p-tag-${status === 'Completed' ? 'success' : 'warning'}`}>
+            {status === 'Completed' ? 'Completed' : 'Pending'}
         </span>
     );
 
@@ -128,9 +140,13 @@ const AssignedTaskTracker = () => {
                     {renderDates(task)}
                     {renderStatus(task.status!)}
                 </div>
-                {task.status !== 'COMPLETED' && (
-                    <Button label="Mark Complete" icon="pi pi-check" className="p-button-success ml-3" onClick={() => markAsComplete(task._id)} />
-                )}
+                <Button
+                    label="Mark Complete"
+                    icon="pi pi-check"
+                    className="p-button-success ml-3"
+                    onClick={() => markAsComplete(task._id)}
+                    disabled={task.status === 'Completed'}
+                />
             </div>
         </div>
     );
@@ -142,9 +158,13 @@ const AssignedTaskTracker = () => {
                 <div className="mb-2">{task.description}</div>
                 {renderDates(task)}
                 {renderStatus(task.status!)}
-                {task.status !== 'COMPLETED' && (
-                    <Button label="Complete" icon="pi pi-check" className="p-button-sm p-button-success mt-2" onClick={() => markAsComplete(task._id)} />
-                )}
+                <Button
+                    label="Complete"
+                    icon="pi pi-check"
+                    className="p-button-sm p-button-success mt-2"
+                    onClick={() => markAsComplete(task._id)}
+                    disabled={task.status === 'Completed'}
+                />
             </div>
         </div>
     );
@@ -153,23 +173,25 @@ const AssignedTaskTracker = () => {
         layoutType === 'list' ? listItem(task) : gridItem(task);
 
     return (
-        <div className="grid">
-            <div className="col-12">
-                <div className="card">
-                    <h5>My Assigned Tasks</h5>
-                    <DataView
-                        value={filteredTasks || tasks}
-                        layout={layout}
-                        paginator
-                        rows={9}
-                        sortOrder={sortOrder}
-                        sortField={sortField}
-                        itemTemplate={itemTemplate}
-                        header={dataViewHeader}
-                    />
+        <ProtectedPage>
+            <div className="grid">
+                <div className="col-12">
+                    <div className="card">
+                        <h5>My Assigned Tasks</h5>
+                        <DataView
+                            value={filteredTasks || tasks}
+                            layout={layout}
+                            paginator
+                            rows={9}
+                            sortOrder={sortOrder}
+                            sortField={sortField}
+                            itemTemplate={itemTemplate}
+                            header={dataViewHeader}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </ProtectedPage>
     );
 };
 

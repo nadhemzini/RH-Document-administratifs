@@ -1,11 +1,11 @@
-import axios from '../app/axios'; // ✅ uses token-enabled axios instance
+import axios from '../app/axios'; // 
 import { Leave } from '@/types/Leave'; // Adjust the path to your Leave interface if needed
 
-const API_URL = '/leaves'; // change if your backend uses a different path
+const API_URL = '/leave'; // change if your backend uses a different path
 
-// Get all leaves
+// Get all leaves /leave/allLeaves
 export const getAllLeaves = async () => {
-    const res = await axios.get(`${API_URL}/getLeaves`);
+    const res = await axios.get(`${API_URL}/allLeaves`);
     return res.data;
 };
 

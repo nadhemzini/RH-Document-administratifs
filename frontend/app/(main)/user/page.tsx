@@ -11,6 +11,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Avatar } from 'primereact/avatar';
 import { getAllUsers, createUser, updateUser, deleteUser } from '../../../service/userService'; // Adjust this path if needed
 import { User } from '@/types/User'; // Adjust this path if needed
+import ProtectedPage from '@/app/(full-page)/components/ProtectedPage';
 
 const emptyUser: User = {
     _id: '',
@@ -78,7 +79,8 @@ export default function UserCrud() {
 
         try {
             if (user._id) {
-                await updateUser(Number(user._id), user);
+                console.log('Updating user:', user);
+                await updateUser(user._id, user);
                 toast.current?.show({ severity: 'success', summary: 'Success', detail: 'User Updated', life: 3000 });
             } else {
                 console.log('Creating user:', user);
@@ -157,98 +159,100 @@ export default function UserCrud() {
     );
 
     return (
-        <div className="card">
-            <Toast ref={toast} />
-            <h2>Users</h2>
+        <ProtectedPage>
+            <div className="card">
+                <Toast ref={toast} />
+                <h2>Users</h2>
 
-            <div className="flex justify-between items-center mb-4 gap-2">
-                <div className="flex gap-2">
-                    <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
-                    <Button
-                        label="Delete"
-                        icon="pi pi-trash"
-                        severity="danger"
-                        onClick={confirmDeleteSelected}
-                        disabled={!selectedUsers || selectedUsers.length === 0}
-                    />
+                <div className="flex justify-between items-center mb-4 gap-2">
+                    <div className="flex gap-2">
+                        <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
+                        <Button
+                            label="Delete"
+                            icon="pi pi-trash"
+                            severity="danger"
+                            onClick={confirmDeleteSelected}
+                            disabled={!selectedUsers || selectedUsers.length === 0}
+                        />
+                    </div>
+                    <Button label="Export CSV" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />
                 </div>
-                <Button label="Export CSV" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />
+
+                <DataTable
+                    ref={dt}
+                    value={users.filter(u => u.role === 'admin' || u.role === 'RH')}
+                    selection={selectedUsers}
+                    onSelectionChange={(e) => setSelectedUsers(e.value)}
+                    dataKey="id"
+                    paginator
+                    rows={10}
+                    rowsPerPageOptions={[5, 10, 25]}
+                    selectionMode="multiple"
+                    header="Manage Users"
+                >
+                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                    <Column header="User" body={avatarNameTemplate} />
+                    <Column field="email" header="Email" sortable />
+                    <Column field="role" header="Role" sortable />
+                    <Column body={actionBodyTemplate} headerStyle={{ width: '10rem' }} />
+                </DataTable>
+
+                {/* Dialogs */}
+                <Dialog visible={userDialog} style={{ width: '500px' }} header="User Details" modal className="p-fluid" onHide={hideDialog}>
+                    <div className="field">
+                        <label htmlFor="name">Name</label>
+                        <InputText id="name" value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="email">Email</label>
+                        <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} required />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="role">Role</label>
+                        <Dropdown id="role" value={user.role} options={roleOptions} onChange={(e) => onInputChange(e, 'role')} placeholder="Select Role" />
+                    </div>
+                    <div className="flex justify-content-end mt-4">
+                        <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} className="mr-2" />
+                        <Button label="Save" icon="pi pi-check" onClick={saveUser} />
+                    </div>
+                </Dialog>
+
+                <Dialog
+                    visible={deleteUserDialog}
+                    style={{ width: '450px' }}
+                    header="Confirm"
+                    modal
+                    footer={
+                        <>
+                            <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
+                            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteUserById} />
+                        </>
+                    }
+                    onHide={hideDeleteUserDialog}
+                >
+                    <div className="confirmation-content">
+                        Are you sure you want to delete <b>{user.name}</b>?
+                    </div>
+                </Dialog>
+
+                <Dialog
+                    visible={deleteUsersDialog}
+                    style={{ width: '450px' }}
+                    header="Confirm"
+                    modal
+                    footer={
+                        <>
+                            <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUsersDialog} />
+                            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedUsers} />
+                        </>
+                    }
+                    onHide={hideDeleteUsersDialog}
+                >
+                    <div className="confirmation-content">
+                        Are you sure you want to delete the selected users?
+                    </div>
+                </Dialog>
             </div>
-
-            <DataTable
-                ref={dt}
-                value={users.filter(u => u.role === 'admin' || u.role === 'RH')}
-                selection={selectedUsers}
-                onSelectionChange={(e) => setSelectedUsers(e.value)}
-                dataKey="id"
-                paginator
-                rows={10}
-                rowsPerPageOptions={[5, 10, 25]}
-                selectionMode="multiple"
-                header="Manage Users"
-            >
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                <Column header="User" body={avatarNameTemplate} />
-                <Column field="email" header="Email" sortable />
-                <Column field="role" header="Role" sortable />
-                <Column body={actionBodyTemplate} headerStyle={{ width: '10rem' }} />
-            </DataTable>
-
-            {/* Dialogs */}
-            <Dialog visible={userDialog} style={{ width: '500px' }} header="User Details" modal className="p-fluid" onHide={hideDialog}>
-                <div className="field">
-                    <label htmlFor="name">Name</label>
-                    <InputText id="name" value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus />
-                </div>
-                <div className="field">
-                    <label htmlFor="email">Email</label>
-                    <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} required />
-                </div>
-                <div className="field">
-                    <label htmlFor="role">Role</label>
-                    <Dropdown id="role" value={user.role} options={roleOptions} onChange={(e) => onInputChange(e, 'role')} placeholder="Select Role" />
-                </div>
-                <div className="flex justify-content-end mt-4">
-                    <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} className="mr-2" />
-                    <Button label="Save" icon="pi pi-check" onClick={saveUser} />
-                </div>
-            </Dialog>
-
-            <Dialog
-                visible={deleteUserDialog}
-                style={{ width: '450px' }}
-                header="Confirm"
-                modal
-                footer={
-                    <>
-                        <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
-                        <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteUserById} />
-                    </>
-                }
-                onHide={hideDeleteUserDialog}
-            >
-                <div className="confirmation-content">
-                    Are you sure you want to delete <b>{user.name}</b>?
-                </div>
-            </Dialog>
-
-            <Dialog
-                visible={deleteUsersDialog}
-                style={{ width: '450px' }}
-                header="Confirm"
-                modal
-                footer={
-                    <>
-                        <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUsersDialog} />
-                        <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedUsers} />
-                    </>
-                }
-                onHide={hideDeleteUsersDialog}
-            >
-                <div className="confirmation-content">
-                    Are you sure you want to delete the selected users?
-                </div>
-            </Dialog>
-        </div>
+        </ProtectedPage>
     );
 }
