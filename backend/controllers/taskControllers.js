@@ -90,7 +90,7 @@ export const deleteTask = async (req, res) => {
         .json({ success: false, message: "Unauthorized action" });
     }
 
-    await task.remove();
+    await task.deleteOne();
 
     res.status(200).json({
       success: true,
