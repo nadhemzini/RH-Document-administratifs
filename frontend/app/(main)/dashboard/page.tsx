@@ -94,11 +94,10 @@ const HRDashboard = () => {
         // Gender distribution
         const male = users.filter(u => u.gender === 'Male').length;
         const female = users.filter(u => u.gender === 'Female').length;
-        const other = users.length - male - female;
         setGenderChart({
-            labels: ['Male', 'Female', 'Other'],
+            labels: ['Male', 'Female'],
             datasets: [{
-                data: [male, female, other],
+                data: [male, female],
                 backgroundColor: ['#42A5F5', '#EC407A', '#9C27B0']
             }]
         });
