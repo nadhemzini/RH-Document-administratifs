@@ -8,6 +8,7 @@ import crudRoutes from "./routes/crudRoutes.js";
 import leaveRoutes from "./routes/leaveRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
+import timeTableRoutes from "./routes/timeTableRoutes.js";
 import cors from 'cors';
 
 
@@ -30,6 +31,7 @@ app.use("/api/user", crudRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/task", taskRoutes);
 app.use("/api/document", documentRoutes); 
+app.use("/api/timetable", timeTableRoutes); 
 
 app.listen(PORT, () => {
   connectDB();
